@@ -1,18 +1,23 @@
 
 
 #include "Bow.h"
-#include "ArcheryPawn.h"
+#include "ArcheryController.h"
 #include "Arrow.h"
+#include "Archery.h"
 #include "APickup/APickup.h"
 
-ABow::ABow() {}
+// for test
+//#include "StaticMesh.h"
 
-void ABow::PreInit() {}
+void ABow::PreInit() {
 
-void ABow::PostInit() {}
+	// reset hands before the game starts
+	g_archeryGlobals.resetHands();
+
+}
 
 void ABow::OnPickup_Implementation(ABaseController* controller) {
-	
+
 	// override default attachment to align bow properly
 	
 	AActor* hand = (AActor*) controller; // manual C++ cast because Unreal's cast macro freaks out otherwise
@@ -23,49 +28,23 @@ void ABow::OnPickup_Implementation(ABaseController* controller) {
 
 	// bow hand and arrow hand
 
-	AArcheryPawn* player = Cast<AArcheryPawn>(g_pBasePawn);
-	player->SetBowHand(controller);
-
-	ABaseController* arrowHand = player->GetArrowHand();
-
-	// spawn arrow
-
-	FVector loc = FVector(0, 0, 50);
-	AArrow* firstArrow = (AArrow*) GetWorld()->SpawnActor(AArrow::StaticClass(), &loc);
-
-	firstArrow->m_pPickupMeshComponent->SetSimulatePhysics(false);
-	firstArrow->AttachToActor(arrowHand, FAttachmentTransformRules::SnapToTargetNotIncludingScale);
-
-	//firstArrow->m_pPickupMeshComponent->SetRelativeLocation(FVector(0, 0, 20));
-	firstArrow->SetActorRelativeLocation(FVector(40, 0, 0));
-
-	Msg("grabbed");
-
-
+	AArcheryController* bowHand = Cast<AArcheryController>(controller);
+	if (bowHand) {
+		g_archeryGlobals.setHands(bowHand);
+		/*
+		Actor* x = Cast<AActor>(g_archeryGlobals.getArrowHand());
+		FVector loc = x->GetActorLocation();
+		AArrow* firstArrow = (AArrow*)GetWorld()->SpawnActor(AArrow::StaticClass(), &loc);
+		*/
+		Msg("hands were set"); // temporary check
+	}
 }
 
 void ABow::OnDrop_Implementation(ABaseController* controller) {
-	AArcheryPawn* player = Cast<AArcheryPawn>(g_pBasePawn);
+	
+	// clear bow and arrow hand assignments
 
-	// remove all attached arrows
+	g_archeryGlobals.resetHands();
 
-	ABaseController* arrowHand = player->GetArrowHand();
-	TArray<AActor*> attachedActors;
-	arrowHand->GetAttachedActors(attachedActors);
-
-	for (int i = 0; i < attachedActors.Num(); i++) {
-		AArrow* arrow = Cast<AArrow>(attachedActors[i]);
-		if (arrow) {
-			arrow->DetachFromActor(FDetachmentTransformRules::KeepWorldTransform);
-			arrow->m_pPickupMeshComponent->SetSimulatePhysics(true);
-		}
-	}
-
-
-	// clear bow hand
-
-	player->SetBowHand(nullptr);
-
-
-	Msg("dropped");
+	Msg("hands were reset"); // temporary check
 }

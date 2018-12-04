@@ -11,12 +11,8 @@ class ARCHERY_API ABow : public APickup {
 	GENERATED_BODY()
 
 public:
-	// Constructor
-	ABow();
 	// PreInit
 	virtual void PreInit() override;
-	// PostInit
-	virtual void PostInit() override;
 
 	// Pickup
 	virtual void OnPickup_Implementation(ABaseController* controller) override;
