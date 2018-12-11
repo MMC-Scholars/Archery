@@ -3,6 +3,7 @@
 #include "ABasePawn/ABasePawn.h"
 #include "System/NLogger.h"
 #include "Archery.h"
+#include "Arrow.h"
 
 /*
  * Constructor
@@ -13,23 +14,27 @@ AArcheryController::AArcheryController() {
 
 void AArcheryController::OnButtonsChanged() {
 
-	m_iButtons |= m_iButtonsPressed;
-	m_iButtons &= ~m_iButtonsReleased;
+	if ( this == g_archeryGlobals.getArrowHand() ) {
 
-	Msg("%i", m_iButtonsPressed);
+		// On trigger press, hold arrow
+
+		if (m_iButtonsPressed & IN_TRIGGER) {
+		
+			// if user is not already near a pickup, spawn an arrow
+
+			if (m_aOverlapActors.Num() == 0) {
+				FVector loc = this->GetActorLocation();
+				AArrow* currentArrow = (AArrow*)GetWorld()->SpawnActor(AArrow::StaticClass(), &loc);
+			}
+		
+		}
+
+		
+	}
 
 	// Super
+
 	Super::OnButtonsChanged();
-
-	if ( this == g_archeryGlobals.getArrowHand() ) {
-//		Msg("this is the arrow hand");
-
-		/*
-		if (m_iButtonsPressed & IN_TRIGGER) {
-			Msg("help! I'm stuck in the computer!");
-		}
-		*/
-	}
 
 }
 

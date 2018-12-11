@@ -31,12 +31,6 @@ void ABow::OnPickup_Implementation(ABaseController* controller) {
 	AArcheryController* bowHand = Cast<AArcheryController>(controller);
 	if (bowHand) {
 		g_archeryGlobals.setHands(bowHand);
-		/*
-		Actor* x = Cast<AActor>(g_archeryGlobals.getArrowHand());
-		FVector loc = x->GetActorLocation();
-		AArrow* firstArrow = (AArrow*)GetWorld()->SpawnActor(AArrow::StaticClass(), &loc);
-		*/
-		Msg("hands were set"); // temporary check
 	}
 }
 
@@ -45,6 +39,4 @@ void ABow::OnDrop_Implementation(ABaseController* controller) {
 	// clear bow and arrow hand assignments
 
 	g_archeryGlobals.resetHands();
-
-	Msg("hands were reset"); // temporary check
 }
