@@ -19,9 +19,10 @@ public:
 	virtual void PreInit() override;
 
 	// DefaultThink
-	virtual void DefaultThink() override;
+	//virtual void DefaultThink() override;
 
 	// Components
+	USphereComponent* m_pHeadCollision;
 	USphereComponent* m_pTailCollision;
 
 	// Variables
@@ -30,8 +31,18 @@ public:
 
 	// Pickup attachment
 	void OnPickup_Implementation(ABaseController* controller) override;
+	// Drop fire
+	void OnDrop_Implementation(ABaseController* controller) override;
+
+	// Fire arrrow
+	void FireArrow(float velocity, FVector forward);
 
 	// Tail overlap
 	UFUNCTION()
+		//void OnOverlapBeginHead(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
+		//void OnOverlapBeginTail(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
 		void OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
+
 };
+
+extern const int HALF_ARROW_LENGTH;
