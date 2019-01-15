@@ -21,8 +21,7 @@ public:
 	// Variables
 	AArrow* m_pNotchedArrow;
 	float m_fArrowVelocity;
-	//short int m_iHapticFac;
-
+	
 	// ArrowNotch
 	void ArrowNotch(AArrow* arrow);
 

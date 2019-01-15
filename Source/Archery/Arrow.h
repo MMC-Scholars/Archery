@@ -24,8 +24,6 @@ public:
 	// Components
 	USphereComponent* m_pHeadCollision;
 	USphereComponent* m_pTailCollision;
-	//UProjectileMovementComponent;
-
 
 	// Variables
 	bool m_bTipOverlap;

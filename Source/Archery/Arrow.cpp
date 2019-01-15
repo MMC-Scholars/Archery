@@ -35,7 +35,7 @@ AArrow::AArrow() {
 
 	m_pTailCollision->bGenerateOverlapEvents = true;
 	m_pTailCollision->OnComponentBeginOverlap.AddDynamic(this, &AArrow::OnOverlapBeginTail);
-	
+
 	// States
 	m_bTipOverlap = false;
 	m_bIsNotched = false;
@@ -100,7 +100,6 @@ void AArrow::OnOverlapBeginTail(UPrimitiveComponent* OverlappedComp, AActor* Oth
 void AArrow::OnDrop_Implementation(ABaseController* controller) {
 	if (m_bIsNotched) {
 		m_bIsNotched = false;
-		
 
 		m_pPickupMeshComponent->SetSimulatePhysics(false);
 	}
@@ -111,8 +110,7 @@ void AArrow::FireArrow(float velocity, FVector forward) {
 	m_vForward = forward;
 	m_bIsFired = true;
 
-
-
+	
 }
 
 
