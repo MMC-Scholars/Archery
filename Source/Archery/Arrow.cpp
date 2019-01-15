@@ -12,9 +12,9 @@ const int HALF_ARROW_LENGTH = 38;
 
 AArrow::AArrow() {
 	m_pPickupMeshComponent->SetStaticMesh(FindMesh(ARROW_MESH));
-	/*
+	
 	// Arrow Head Collision Sphere
-
+	
 	m_pHeadCollision = CreateDefaultSubobject<USphereComponent>("Head Collision");
 	m_pHeadCollision->InitSphereRadius(0.5f);
 
@@ -23,7 +23,8 @@ AArrow::AArrow() {
 
 	m_pHeadCollision->bGenerateOverlapEvents = true;
 	m_pHeadCollision->OnComponentBeginOverlap.AddDynamic(this, &AArrow::OnOverlapBeginHead);
-	*/
+	
+	
 	// Arrow Tail Collision Sphere
 
 	m_pTailCollision = CreateDefaultSubobject<USphereComponent>("Tail Collision");
@@ -33,16 +34,15 @@ AArrow::AArrow() {
 	m_pTailCollision->SetRelativeLocation(FVector(-1 * (HALF_ARROW_LENGTH - 5), 0, 0));
 
 	m_pTailCollision->bGenerateOverlapEvents = true;
-//	m_pTailCollision->OnComponentBeginOverlap.AddDynamic(this, &AArrow::OnOverlapBeginTail);
-	m_pTailCollision->OnComponentBeginOverlap.AddDynamic(this, &AArrow::OnOverlapBegin);
-
+	m_pTailCollision->OnComponentBeginOverlap.AddDynamic(this, &AArrow::OnOverlapBeginTail);
+	
 	// States
-
+	m_bTipOverlap = false;
 	m_bIsNotched = false;
 	m_bIsFired = false;
 
-	//m_pHeadCollision->SetVisibility(true, true); // debug only
-	//m_pHeadCollision->SetHiddenInGame(false, true); // debug only
+	m_pHeadCollision->SetVisibility(true, true); // debug only
+	m_pHeadCollision->SetHiddenInGame(false, true); // debug only
 	m_pTailCollision->SetVisibility(true, true); // debug only
 	m_pTailCollision->SetHiddenInGame(false, true); // debug only
 }
@@ -54,7 +54,9 @@ void AArrow::PreInit() {
 }
 
 void AArrow::OnPickup_Implementation(ABaseController* controller) {
-
+	if (m_bTipOverlap) m_bTipOverlap = false;
+	if (m_bIsNotched) m_bIsNotched = false;
+	if (m_bIsFired) m_bIsFired = false;
 	
 
 	// if user is holding bow, use custom pickup attachment
@@ -82,8 +84,7 @@ void AArrow::OnPickup_Implementation(ABaseController* controller) {
 	}
 }
 
-//void AArrow::OnOverlapBeginTail(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult) {
-void AArrow::OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult) {
+void AArrow::OnOverlapBeginTail(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult) {
 	// TODO change this to overlap with bow string
 	ABow* bow = Cast<ABow>(OtherActor);
 	if (bow && !m_bIsNotched && !m_bIsFired) {
@@ -99,30 +100,39 @@ void AArrow::OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* OtherAc
 void AArrow::OnDrop_Implementation(ABaseController* controller) {
 	if (m_bIsNotched) {
 		m_bIsNotched = false;
-		m_bIsFired = true;
+		
 
 		m_pPickupMeshComponent->SetSimulatePhysics(false);
 	}
 }
 
 void AArrow::FireArrow(float velocity, FVector forward) {
-	float v = velocity;
-	FVector f = forward;
+	m_fVelocity = velocity;
+	m_vForward = forward;
+	m_bIsFired = true;
 
-	while (m_bIsFired) {
-//		*arrowphysics move one unit*
-		// use physics to calculate the next position and rotation
-	
-		FVector pos;
-		FRotator rot;
-		CalcNextMove(v, f, pos, rot);
-//		if (tip overlaps object) {
-			m_bIsFired = false;
-//		}
-//	
-	}
+
+
 }
-/*
+
+
 void AArrow::OnOverlapBeginHead(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult) {
+	if (m_bIsFired) m_bTipOverlap = true;
 }
-*/
+
+void AArrow::DefaultThink() {
+	
+	if (m_bIsFired) {
+		FVector pos = GetActorLocation();
+		FRotator rot = GetActorRotation();
+
+		CalcNextMove(m_fVelocity, m_vForward, pos, rot);
+
+
+		SetActorLocation(pos);
+		SetActorRotation(rot);
+
+		if (m_bTipOverlap) m_bIsFired = false;
+	}
+	
+}

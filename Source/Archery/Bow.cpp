@@ -5,6 +5,7 @@
 #include "Arrow.h"
 #include "Archery.h"
 #include "APickup/APickup.h"
+#include <cmath>
 
 #include "System/NLogger.h"
 
@@ -18,7 +19,10 @@ void ABow::PreInit() {
 
 	// reset attached arrow
 	m_pNotchedArrow = nullptr;
+	m_fArrowVelocity = 0;
 
+	// haptics
+	//m_iHapticFac = 0;
 }
 
 void ABow::OnPickup_Implementation(ABaseController* controller) {
@@ -48,9 +52,13 @@ void ABow::OnDrop_Implementation(ABaseController* controller) {
 
 void ABow::ArrowNotch(AArrow* arrow) {
 	m_pNotchedArrow = arrow;
+	m_fArrowVelocity = 0;
+	//m_iHapticFac = 90;
 }
 
 void ABow::DefaultThink() {
+
+	// if holding bow and arrow
 	if (g_archeryGlobals.getBowHand()) {
 		if (m_pNotchedArrow) {
 			// get the bow hand origin
@@ -63,7 +71,7 @@ void ABow::DefaultThink() {
 			forward.GetSafeNormal(1.0f);
 			forward.Normalize(1.0f);
 
-			//Msg(forward);
+			
 
 			if (m_pNotchedArrow->m_bIsNotched) { // arrow is notched				
 				// set arrow location and rotation
@@ -73,16 +81,39 @@ void ABow::DefaultThink() {
 				FVector loc = s + (forward * HALF_ARROW_LENGTH);
 				m_pNotchedArrow->SetActorLocation(loc);
 
+				// arrow velocity
+				//
+				// d = sqrt(dx^2 + dy^2 + dz^2)
+				float distance = sqrt(pow(e.X - s.X, 2) + pow(e.Y - s.Y, 2) + pow(e.Z - s.Z, 2));
+				m_fArrowVelocity = 0.1 * pow(distance, 2);
+				
+				// haptics
+				float amplitude = m_fArrowVelocity / 500.0;
+				if (amplitude > 1.0) amplitude = 1.0;
+				GetWorld()->GetFirstPlayerController()->SetHapticsByValue(0.01, amplitude, g_archeryGlobals.getArrowHand()->m_eWhichHand);
+				/*short int velocityInt = round(m_fArrowVelocity);
+				Msg("is %i == %i?", velocityInt, m_iHapticFac);
+				// only play haptics when adjusting the bow string
+				if (velocityInt+1 == m_iHapticFac || velocityInt-1 == m_iHapticFac) {
+					m_iHapticFac = velocityInt;
+					GetWorld()->GetFirstPlayerController()->SetHapticsByValue(0.01, amplitude, g_archeryGlobals.getArrowHand()->m_eWhichHand);
+				}
+				else {
+					GetWorld()->GetFirstPlayerController()->SetHapticsByValue(0, 0, g_archeryGlobals.getArrowHand()->m_eWhichHand);
+				}
+				*/
 			}
 			else { // arrow has just been fired
 
-				// TODO - dummy value
-				float v = 1.0;
-
-				m_pNotchedArrow->FireArrow(v, forward);
+				m_pNotchedArrow->FireArrow(m_fArrowVelocity, forward);
 				
 				m_pNotchedArrow = nullptr;
+
+				// reset haptics
+				GetWorld()->GetFirstPlayerController()->SetHapticsByValue(0, 0, g_archeryGlobals.getArrowHand()->m_eWhichHand);
+
 			}
+			
 		}
 		else { // there is no notched arrow
 		}
