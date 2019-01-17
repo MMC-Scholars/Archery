@@ -9,8 +9,27 @@
 
 #include "System/NLogger.h"
 
-// for test
-//#include "StaticMesh.h"
+// bowstring attachments relative to the bow mesh
+const FVector BOW_TOP = FVector(-8, 0, 53);
+const FVector BOW_BOT = FVector(-8, 0, -53);
+const FVector BOW_MID = (BOW_TOP+BOW_BOT)/2;
+
+ABow::ABow() {
+	// setup bowstring attachment components
+
+	m_pStringTop = CreateDefaultSubobject<USceneComponent>("String Top");
+	m_pStringTop->SetRelativeLocation(BOW_TOP);
+	m_pStringTop->SetupAttachment(RootComponent);
+
+	m_pStringMid = CreateDefaultSubobject<USceneComponent>("String Middle");
+	m_pStringMid->SetRelativeLocation(BOW_MID);
+	m_pStringMid->SetupAttachment(RootComponent);
+
+	m_pStringBot = CreateDefaultSubobject<USceneComponent>("String Bottom");
+	m_pStringBot->SetRelativeLocation(BOW_BOT);
+	m_pStringBot->SetupAttachment(RootComponent);
+
+}
 
 void ABow::PreInit() {
 
@@ -21,8 +40,10 @@ void ABow::PreInit() {
 	m_pNotchedArrow = nullptr;
 	m_fArrowVelocity = 0;
 
-	// haptics
-	//m_iHapticFac = 0;
+	// setup bowstring properties
+	m_sStringProps.Color = FColor::FromHex("CCC");
+	m_sStringProps.Thickness = 0.2f;
+	m_sStringProps.Duration = 0.1f;
 }
 
 void ABow::OnPickup_Implementation(ABaseController* controller) {
@@ -53,11 +74,12 @@ void ABow::OnDrop_Implementation(ABaseController* controller) {
 void ABow::ArrowNotch(AArrow* arrow) {
 	m_pNotchedArrow = arrow;
 	m_fArrowVelocity = 0;
-	//m_iHapticFac = 90;
 }
 
 void ABow::DefaultThink() {
 
+	// TODO - move bowstring draw to appropriate place(s)
+	
 	// if holding bow and arrow
 	if (g_archeryGlobals.getBowHand()) {
 		if (m_pNotchedArrow) {
@@ -74,6 +96,11 @@ void ABow::DefaultThink() {
 			
 
 			if (m_pNotchedArrow->m_bIsNotched) { // arrow is notched				
+				// draw string
+				UTIL_DrawLine(m_pStringTop->GetComponentLocation(), s, &m_sStringProps);
+				UTIL_DrawLine(m_pStringBot->GetComponentLocation(), s, &m_sStringProps);
+
+												 
 				// set arrow location and rotation
 				FRotator rot = forward.Rotation();
 				m_pNotchedArrow->SetActorRotation(rot);
@@ -89,12 +116,6 @@ void ABow::DefaultThink() {
 				m_fArrowVelocity = 0.1 * pow(distance, 2);
 				
 				// haptics
-				/*
-				float amplitude = m_fArrowVelocity / 500.0;
-				if (amplitude > 1.0) amplitude = 1.0;
-				GetWorld()->GetFirstPlayerController()->SetHapticsByValue(0.01, amplitude, g_archeryGlobals.getArrowHand()->m_eWhichHand);
-				*/
-
 				//float frq = FMath::Clamp(m_fArrowVelocity/1000 + (m_fArrowVelocity-prevArrowVelocity)/1000, 0.0f, 1.0f);
 				float frq = 1-FMath::Clamp(m_fArrowVelocity / 100 + (m_fArrowVelocity - prevArrowVelocity) / 100, 0.0f, 0.7f);
 				float amp = FMath::Clamp(FMath::Abs((m_fArrowVelocity - prevArrowVelocity) / 5), 0.0f, 1.0f);
@@ -103,6 +124,8 @@ void ABow::DefaultThink() {
 
 			}
 			else { // arrow has just been fired
+				
+				// TODO - string spring
 
 				m_pNotchedArrow->FireArrow(m_fArrowVelocity, forward);
 				
@@ -115,9 +138,16 @@ void ABow::DefaultThink() {
 			
 		}
 		else { // there is no notched arrow
+			// draw string
+			UTIL_DrawLine(m_pStringTop->GetComponentLocation(), m_pStringMid->GetComponentLocation(), &m_sStringProps);
+			UTIL_DrawLine(m_pStringBot->GetComponentLocation(), m_pStringMid->GetComponentLocation(), &m_sStringProps);
 		}
 	}
 	else { // if bow is dropped
+		// draw string
+		UTIL_DrawLine(m_pStringTop->GetComponentLocation(), m_pStringMid->GetComponentLocation(), &m_sStringProps);
+		UTIL_DrawLine(m_pStringBot->GetComponentLocation(), m_pStringMid->GetComponentLocation(), &m_sStringProps);
+
 		g_archeryGlobals.resetHands();
 		
 		TArray<AActor*> attached;
