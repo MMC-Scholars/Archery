@@ -3,6 +3,7 @@
 #include "ABasePawn/ABasePawn.h"
 #include "System/NLogger.h"
 #include "Archery.h"
+#include "Bow.h"
 #include "Arrow.h"
 
 /*
@@ -20,9 +21,15 @@ void AArcheryController::OnButtonsChanged() {
 
 		if (m_iButtonsPressed & IN_TRIGGER) {
 		
-			// if user is not already near a pickup, spawn an arrow
+			// if controller is not near a pickup, or is near the bow, spawn an arrow
 
-			if (m_aOverlapActors.Num() == 0) {
+			bool nearBow = false;
+			for (int i = 0; i < m_aOverlapActors.Num(); i++) {
+				ABow* bow = Cast<ABow>(m_aOverlapActors[i]);
+				if (bow) nearBow = true;
+			}
+
+			if (m_aOverlapActors.Num() == 0 || nearBow) {
 				FVector loc = this->GetActorLocation();
 				AArrow* currentArrow = (AArrow*)GetWorld()->SpawnActor(AArrow::StaticClass(), &loc);
 			}

@@ -48,20 +48,30 @@ void ABow::PreInit() {
 
 void ABow::OnPickup_Implementation(ABaseController* controller) {
 
-	// override default attachment to align bow properly
+	AActor* hand = (AActor*)controller; // manual C++ cast because Unreal's cast macro freaks out otherwise
+
+	// override default pickup
+	if (m_aParentActors.Num() > 1) {
+		DetachFromActor(FDetachmentTransformRules::KeepWorldTransform);
+		m_aParentActors.Remove(controller);
+		AttachToActor(m_aParentActors[0], FAttachmentTransformRules::KeepWorldTransform);
+		hand = (AActor*)m_aParentActors[0];
+	}
 	
-	AActor* hand = (AActor*) controller; // manual C++ cast because Unreal's cast macro freaks out otherwise
+	// override default attachment to align bow properly
+
 	if (hand) {
 		DetachFromActor(FDetachmentTransformRules::KeepWorldTransform);
 		AttachToActor(hand, FAttachmentTransformRules::SnapToTargetNotIncludingScale);
+
+		// bow hand and arrow hand
+
+		AArcheryController* bowHand = Cast<AArcheryController>(hand);
+		if (bowHand) {
+			g_archeryGlobals.setHands(bowHand);
+		}
 	}
 
-	// bow hand and arrow hand
-
-	AArcheryController* bowHand = Cast<AArcheryController>(controller);
-	if (bowHand) {
-		g_archeryGlobals.setHands(bowHand);
-	}
 }
 
 void ABow::OnDrop_Implementation(ABaseController* controller) {
@@ -116,8 +126,8 @@ void ABow::DefaultThink() {
 				m_fArrowVelocity = 0.1 * pow(distance, 2);
 				
 				// haptics
-				//float frq = FMath::Clamp(m_fArrowVelocity/1000 + (m_fArrowVelocity-prevArrowVelocity)/1000, 0.0f, 1.0f);
-				float frq = 1-FMath::Clamp(m_fArrowVelocity / 100 + (m_fArrowVelocity - prevArrowVelocity) / 100, 0.0f, 0.7f);
+				float frq = FMath::Clamp(m_fArrowVelocity/1000 + (m_fArrowVelocity-prevArrowVelocity)/1000, 0.0f, 1.0f);
+				//float frq = 1-FMath::Clamp(m_fArrowVelocity / 100 + (m_fArrowVelocity - prevArrowVelocity) / 100, 0.0f, 0.7f);
 				float amp = FMath::Clamp(FMath::Abs((m_fArrowVelocity - prevArrowVelocity) / 5), 0.0f, 1.0f);
 				
 				GetWorld()->GetFirstPlayerController()->SetHapticsByValue(frq, amp, g_archeryGlobals.getArrowHand()->m_eWhichHand);

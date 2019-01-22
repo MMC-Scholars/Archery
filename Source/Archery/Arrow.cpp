@@ -66,10 +66,12 @@ void AArrow::OnPickup_Implementation(ABaseController* controller) {
 		
 		// TODO
 		// prevent controller from grabbing multiple arrows at once
-		AArcheryController* archeryHand = Cast<AArcheryController>(controller);
+		AArcheryController* archeryHand = Cast<AArcheryController>(hand);
 		//archeryHand->m_aAttachActors.Remove(this);
 
-		if (archeryHand->m_aAttachActors.Num() == 0) {
+		Msg("The arrow hand has %i attached actors. This number should be 0.", m_aAttachActors.Num());
+
+		if (archeryHand && archeryHand->m_aAttachActors.Num() == 0) {
 			m_pPickupMeshComponent->SetRenderCustomDepth(false);
 			m_pPickupMeshComponent->SetSimulatePhysics(false);
 			AttachToActor(hand, FAttachmentTransformRules::SnapToTargetNotIncludingScale);
