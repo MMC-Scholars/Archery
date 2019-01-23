@@ -64,26 +64,22 @@ void AArrow::OnPickup_Implementation(ABaseController* controller) {
 	if (hand && g_archeryGlobals.getBowHand()) {
 		DetachFromActor(FDetachmentTransformRules::KeepWorldTransform);
 		
-		// TODO
-		// prevent controller from grabbing multiple arrows at once
+		// TODO - prevent controller from grabbing multiple arrows at once
 		AArcheryController* archeryHand = Cast<AArcheryController>(hand);
-		//archeryHand->m_aAttachActors.Remove(this);
 
-		Msg("The arrow hand has %i attached actors. This number should be 0.", m_aAttachActors.Num());
-
-		if (archeryHand && archeryHand->m_aAttachActors.Num() == 0) {
+		if (archeryHand) {// && archeryHand->m_aAttachActors.Num() == 0) {
 			m_pPickupMeshComponent->SetRenderCustomDepth(false);
 			m_pPickupMeshComponent->SetSimulatePhysics(false);
 			AttachToActor(hand, FAttachmentTransformRules::SnapToTargetNotIncludingScale);
 			// manually move arrow mesh forward to appear as though the user is holding the arrow tail 
 			m_pPickupMeshComponent->SetRelativeLocation(FVector(HALF_ARROW_LENGTH, 0, 0));
-		//	archeryHand->m_aAttachActors.Add(this);
 		}
-		else {
+/*		else {
+			Msg("Arrow is picked up and attached??");
 			m_pPickupMeshComponent->SetRenderCustomDepth(true);
 			m_pPickupMeshComponent->SetSimulatePhysics(true);
 		}
-	}
+*/	}
 }
 
 void AArrow::OnOverlapBeginTail(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult) {
@@ -100,9 +96,9 @@ void AArrow::OnOverlapBeginTail(UPrimitiveComponent* OverlappedComp, AActor* Oth
 }
 
 void AArrow::OnDrop_Implementation(ABaseController* controller) {
+	
 	if (m_bIsNotched) {
 		m_bIsNotched = false;
-
 		m_pPickupMeshComponent->SetSimulatePhysics(false);
 	}
 }
@@ -111,8 +107,6 @@ void AArrow::FireArrow(float velocity, FVector forward) {
 	m_fVelocity = velocity;
 	m_vForward = forward;
 	m_bIsFired = true;
-
-	
 }
 
 
@@ -122,6 +116,8 @@ void AArrow::OnOverlapBeginHead(UPrimitiveComponent* OverlappedComp, AActor* Oth
 
 void AArrow::DefaultThink() {
 	
+	//Msg("is notched: %d", m_bIsNotched);
+
 	if (m_bIsFired) {
 		FVector pos = GetActorLocation();
 		FRotator rot = GetActorRotation();

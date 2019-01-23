@@ -15,6 +15,8 @@ AArcheryController::AArcheryController() {
 
 void AArcheryController::OnButtonsChanged() {
 
+	// only if holding the bow in the other hand
+
 	if ( this == g_archeryGlobals.getArrowHand() ) {
 
 		// On trigger press, hold arrow

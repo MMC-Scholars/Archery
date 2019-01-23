@@ -75,10 +75,11 @@ void ABow::OnPickup_Implementation(ABaseController* controller) {
 }
 
 void ABow::OnDrop_Implementation(ABaseController* controller) {
-	
-	// clear bow and arrow hand assignments
 
-	g_archeryGlobals.resetHands();
+	// clear bow and arrow hand assignments
+	if (m_aParentActors.Num() == 0) {
+		g_archeryGlobals.resetHands();
+	}
 }
 
 void ABow::ArrowNotch(AArrow* arrow) {
@@ -105,7 +106,7 @@ void ABow::DefaultThink() {
 
 			
 
-			if (m_pNotchedArrow->m_bIsNotched) { // arrow is notched				
+			if (m_pNotchedArrow->m_bIsNotched) { // arrow is notched
 				// draw string
 				UTIL_DrawLine(m_pStringTop->GetComponentLocation(), s, &m_sStringProps);
 				UTIL_DrawLine(m_pStringBot->GetComponentLocation(), s, &m_sStringProps);
@@ -127,7 +128,6 @@ void ABow::DefaultThink() {
 				
 				// haptics
 				float frq = FMath::Clamp(m_fArrowVelocity/1000 + (m_fArrowVelocity-prevArrowVelocity)/1000, 0.0f, 1.0f);
-				//float frq = 1-FMath::Clamp(m_fArrowVelocity / 100 + (m_fArrowVelocity - prevArrowVelocity) / 100, 0.0f, 0.7f);
 				float amp = FMath::Clamp(FMath::Abs((m_fArrowVelocity - prevArrowVelocity) / 5), 0.0f, 1.0f);
 				
 				GetWorld()->GetFirstPlayerController()->SetHapticsByValue(frq, amp, g_archeryGlobals.getArrowHand()->m_eWhichHand);
@@ -136,7 +136,11 @@ void ABow::DefaultThink() {
 			else { // arrow has just been fired
 				
 				// TODO - string spring
+				
+				m_pNotchedArrow->m_pPickupMeshComponent->SetSimulatePhysics(false);
 
+				//for (int i = 0; i < 5; i++) { Msg("ARROW HAS JUST BEEN FIRED."); }
+				
 				m_pNotchedArrow->FireArrow(m_fArrowVelocity, forward);
 				
 				m_pNotchedArrow = nullptr;
