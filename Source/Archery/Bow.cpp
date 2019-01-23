@@ -9,12 +9,17 @@
 
 #include "System/NLogger.h"
 
+#define BOW_MESH L"StaticMesh'/Game/Meshes/Bow.Bow'"
+
 // bowstring attachments relative to the bow mesh
 const FVector BOW_TOP = FVector(-8, 0, 53);
 const FVector BOW_BOT = FVector(-8, 0, -53);
 const FVector BOW_MID = (BOW_TOP+BOW_BOT)/2;
 
 ABow::ABow() {
+
+	m_pPickupMeshComponent->SetStaticMesh(FindMesh(BOW_MESH));
+
 	// setup bowstring attachment components
 
 	m_pStringTop = CreateDefaultSubobject<USceneComponent>("String Top");
@@ -28,6 +33,8 @@ ABow::ABow() {
 	m_pStringBot = CreateDefaultSubobject<USceneComponent>("String Bottom");
 	m_pStringBot->SetRelativeLocation(BOW_BOT);
 	m_pStringBot->SetupAttachment(RootComponent);
+
+	m_pPickupMeshComponent->SetSimulatePhysics(false);
 
 }
 
@@ -61,6 +68,17 @@ void ABow::OnPickup_Implementation(ABaseController* controller) {
 	// override default attachment to align bow properly
 
 	if (hand) {
+
+		// if trying to hold bow, detatch all other actors
+		for (int i = 0; i < controller->m_aAttachActors.Num(); i++) {
+			controller->m_aAttachActors[i]->DetachFromActor(FDetachmentTransformRules::KeepWorldTransform);
+			controller->m_aAttachActors[i]->m_pPickupMeshComponent->SetSimulatePhysics(true);
+		}
+		//for (int i = 0; i < controller->m_aOverlapActors.Num(); i++) {
+			//controller->m_aOverlapActors[i]->DetachFromActor(FDetachmentTransformRules::KeepWorldTransform);
+			//controller->m_aOverlapActors[i]->m_pPickupMeshComponent->SetSimulatePhysics(true);
+		//}
+
 		DetachFromActor(FDetachmentTransformRules::KeepWorldTransform);
 		AttachToActor(hand, FAttachmentTransformRules::SnapToTargetNotIncludingScale);
 
@@ -90,6 +108,20 @@ void ABow::ArrowNotch(AArrow* arrow) {
 void ABow::DefaultThink() {
 
 	// TODO - move bowstring draw to appropriate place(s)
+
+	// detatch all actors that are not the bow
+	for (AActor* actor : m_aParentActors) {
+		if (actor == g_archeryGlobals.getBowHand()) {
+			AArcheryController* bowHand = Cast<AArcheryController>(actor);
+			for (int i = 0; i < bowHand->m_aAttachActors.Num(); i++) {
+				ABow* bow = Cast<ABow>(bowHand->m_aAttachActors[i]);
+				if (!bow) {
+					bowHand->m_aAttachActors[i]->DetachFromActor(FDetachmentTransformRules::KeepWorldTransform);
+					bowHand->m_aAttachActors[i]->m_pPickupMeshComponent->SetSimulatePhysics(true);
+				}
+			}
+		}
+	}
 	
 	// if holding bow and arrow
 	if (g_archeryGlobals.getBowHand()) {
@@ -130,6 +162,8 @@ void ABow::DefaultThink() {
 				float frq = FMath::Clamp(m_fArrowVelocity/1000 + (m_fArrowVelocity-prevArrowVelocity)/1000, 0.0f, 1.0f);
 				float amp = FMath::Clamp(FMath::Abs((m_fArrowVelocity - prevArrowVelocity) / 5), 0.0f, 1.0f);
 				
+				Msg("frq: %f\namp: %f\n", frq, amp);
+
 				GetWorld()->GetFirstPlayerController()->SetHapticsByValue(frq, amp, g_archeryGlobals.getArrowHand()->m_eWhichHand);
 
 			}
@@ -138,8 +172,6 @@ void ABow::DefaultThink() {
 				// TODO - string spring
 				
 				m_pNotchedArrow->m_pPickupMeshComponent->SetSimulatePhysics(false);
-
-				//for (int i = 0; i < 5; i++) { Msg("ARROW HAS JUST BEEN FIRED."); }
 				
 				m_pNotchedArrow->FireArrow(m_fArrowVelocity, forward);
 				
@@ -147,18 +179,17 @@ void ABow::DefaultThink() {
 
 				// reset haptics
 				GetWorld()->GetFirstPlayerController()->SetHapticsByValue(0, 0, g_archeryGlobals.getArrowHand()->m_eWhichHand);
-
 			}
 			
 		}
 		else { // there is no notched arrow
-			// draw string
+			// render string
 			UTIL_DrawLine(m_pStringTop->GetComponentLocation(), m_pStringMid->GetComponentLocation(), &m_sStringProps);
 			UTIL_DrawLine(m_pStringBot->GetComponentLocation(), m_pStringMid->GetComponentLocation(), &m_sStringProps);
 		}
 	}
 	else { // if bow is dropped
-		// draw string
+		// render string
 		UTIL_DrawLine(m_pStringTop->GetComponentLocation(), m_pStringMid->GetComponentLocation(), &m_sStringProps);
 		UTIL_DrawLine(m_pStringBot->GetComponentLocation(), m_pStringMid->GetComponentLocation(), &m_sStringProps);
 

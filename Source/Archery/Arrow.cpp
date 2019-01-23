@@ -8,7 +8,7 @@
 #include "Bow.h"
 
 #define ARROW_MESH L"StaticMesh'/Game/Meshes/Arrow.Arrow'"
-const int HALF_ARROW_LENGTH = 38;
+const int HALF_ARROW_LENGTH = 37;
 
 AArrow::AArrow() {
 	m_pPickupMeshComponent->SetStaticMesh(FindMesh(ARROW_MESH));
@@ -61,42 +61,42 @@ void AArrow::OnPickup_Implementation(ABaseController* controller) {
 
 	// if user is holding bow, use custom pickup attachment
 	AActor* hand = (AActor*) controller; // manual C++ cast because Unreal's cast macro freaks out otherwise
-	if (hand && g_archeryGlobals.getBowHand()) {
-		DetachFromActor(FDetachmentTransformRules::KeepWorldTransform);
+	//if (hand && controller != g_archeryGlobals.getBowHand()) {
+	if (hand && controller == g_archeryGlobals.getArrowHand()) {
+			DetachFromActor(FDetachmentTransformRules::KeepWorldTransform);
 		
-		// TODO - prevent controller from grabbing multiple arrows at once
 		AArcheryController* archeryHand = Cast<AArcheryController>(hand);
 
-		if (archeryHand) {// && archeryHand->m_aAttachActors.Num() == 0) {
+		if (archeryHand) {
 			m_pPickupMeshComponent->SetRenderCustomDepth(false);
 			m_pPickupMeshComponent->SetSimulatePhysics(false);
 			AttachToActor(hand, FAttachmentTransformRules::SnapToTargetNotIncludingScale);
 			// manually move arrow mesh forward to appear as though the user is holding the arrow tail 
 			m_pPickupMeshComponent->SetRelativeLocation(FVector(HALF_ARROW_LENGTH, 0, 0));
 		}
-/*		else {
-			Msg("Arrow is picked up and attached??");
+		else {
 			m_pPickupMeshComponent->SetRenderCustomDepth(true);
 			m_pPickupMeshComponent->SetSimulatePhysics(true);
 		}
-*/	}
+	}
 }
 
 void AArrow::OnOverlapBeginTail(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult) {
-	// TODO change this to overlap with bow string
+	
 	ABow* bow = Cast<ABow>(OtherActor);
 	if (bow && !m_bIsNotched && !m_bIsFired) {
-		DetachFromActor(FDetachmentTransformRules::KeepWorldTransform);
-		AttachToActor(bow, FAttachmentTransformRules::SnapToTargetNotIncludingScale);
+		if (m_aParentActors.Contains(g_archeryGlobals.getArrowHand())) {
+			DetachFromActor(FDetachmentTransformRules::KeepWorldTransform);
+			AttachToActor(bow, FAttachmentTransformRules::SnapToTargetNotIncludingScale);
 
-		bow->ArrowNotch(this);
-		m_bIsNotched = true;
+			bow->ArrowNotch(this);
+			m_bIsNotched = true;
+		}
 	}
 
 }
 
 void AArrow::OnDrop_Implementation(ABaseController* controller) {
-	
 	if (m_bIsNotched) {
 		m_bIsNotched = false;
 		m_pPickupMeshComponent->SetSimulatePhysics(false);
@@ -115,15 +115,12 @@ void AArrow::OnOverlapBeginHead(UPrimitiveComponent* OverlappedComp, AActor* Oth
 }
 
 void AArrow::DefaultThink() {
-	
-	//Msg("is notched: %d", m_bIsNotched);
 
 	if (m_bIsFired) {
 		FVector pos = GetActorLocation();
 		FRotator rot = GetActorRotation();
 
 		CalcNextMove(m_fVelocity, m_vForward, pos, rot);
-
 
 		SetActorLocation(pos);
 		SetActorRotation(rot);
