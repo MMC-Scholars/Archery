@@ -10,6 +10,7 @@
 #include "System/NLogger.h"
 
 #define BOW_MESH L"StaticMesh'/Game/Meshes/Bow.Bow'"
+#define PLACEHOLDER_MAT L"Material'/Game/Meshes/materials/m_invisible.m_invisible'"
 
 // bowstring attachments relative to the bow mesh
 const FVector BOW_TOP = FVector(-8, 0, 53);
@@ -74,10 +75,6 @@ void ABow::OnPickup_Implementation(ABaseController* controller) {
 			controller->m_aAttachActors[i]->DetachFromActor(FDetachmentTransformRules::KeepWorldTransform);
 			controller->m_aAttachActors[i]->m_pPickupMeshComponent->SetSimulatePhysics(true);
 		}
-		//for (int i = 0; i < controller->m_aOverlapActors.Num(); i++) {
-			//controller->m_aOverlapActors[i]->DetachFromActor(FDetachmentTransformRules::KeepWorldTransform);
-			//controller->m_aOverlapActors[i]->m_pPickupMeshComponent->SetSimulatePhysics(true);
-		//}
 
 		DetachFromActor(FDetachmentTransformRules::KeepWorldTransform);
 		AttachToActor(hand, FAttachmentTransformRules::SnapToTargetNotIncludingScale);
@@ -106,8 +103,6 @@ void ABow::ArrowNotch(AArrow* arrow) {
 }
 
 void ABow::DefaultThink() {
-
-	// TODO - move bowstring draw to appropriate place(s)
 
 	// detatch all actors that are not the bow
 	for (AActor* actor : m_aParentActors) {
@@ -162,19 +157,13 @@ void ABow::DefaultThink() {
 				float frq = FMath::Clamp(m_fArrowVelocity/1000 + (m_fArrowVelocity-prevArrowVelocity)/1000, 0.0f, 1.0f);
 				float amp = FMath::Clamp(FMath::Abs((m_fArrowVelocity - prevArrowVelocity) / 5), 0.0f, 1.0f);
 				
-				Msg("frq: %f\namp: %f\n", frq, amp);
-
 				GetWorld()->GetFirstPlayerController()->SetHapticsByValue(frq, amp, g_archeryGlobals.getArrowHand()->m_eWhichHand);
 
 			}
 			else { // arrow has just been fired
-				
-				// TODO - string spring
-				
+
 				m_pNotchedArrow->m_pPickupMeshComponent->SetSimulatePhysics(false);
-				
 				m_pNotchedArrow->FireArrow(m_fArrowVelocity, forward);
-				
 				m_pNotchedArrow = nullptr;
 
 				// reset haptics
