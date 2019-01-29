@@ -10,7 +10,6 @@
 #include "System/NLogger.h"
 
 #define BOW_MESH L"StaticMesh'/Game/Meshes/Bow.Bow'"
-#define PLACEHOLDER_MAT L"Material'/Game/Meshes/materials/m_invisible.m_invisible'"
 
 // bowstring attachments relative to the bow mesh
 const FVector BOW_TOP = FVector(-8, 0, 53);
@@ -50,7 +49,7 @@ void ABow::PreInit() {
 
 	// setup bowstring properties
 	m_sStringProps.Color = FColor::FromHex("CCC");
-	m_sStringProps.Thickness = 0.2f;
+	m_sStringProps.Thickness = 0.4f;
 	m_sStringProps.Duration = 0.1f;
 }
 
@@ -98,6 +97,11 @@ void ABow::OnDrop_Implementation(ABaseController* controller) {
 }
 
 void ABow::ArrowNotch(AArrow* arrow) {
+	// if an arrow is somehow already notched, detatch and simulate physics
+	if (m_pNotchedArrow) {
+		m_pNotchedArrow->DetachFromActor(FDetachmentTransformRules::KeepWorldTransform);
+		m_pNotchedArrow->m_pPickupMeshComponent->SetSimulatePhysics(true);
+	}
 	m_pNotchedArrow = arrow;
 	m_fArrowVelocity = 0;
 }

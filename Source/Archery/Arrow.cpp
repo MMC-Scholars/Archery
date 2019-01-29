@@ -6,6 +6,7 @@
 #include "Archery.h"
 #include "ArrowPhysics.h"
 #include "Bow.h"
+#include "ArcheryTarget.h"
 
 #define ARROW_MESH L"StaticMesh'/Game/Meshes/Arrow.Arrow'"
 const int HALF_ARROW_LENGTH = 37;
@@ -13,17 +14,16 @@ const int HALF_ARROW_LENGTH = 37;
 AArrow::AArrow() {
 	m_pPickupMeshComponent->SetStaticMesh(FindMesh(ARROW_MESH));
 	
-	// Arrow Head Collision Sphere
+	// Arrow Head Collision Box
 	
-	m_pHeadCollision = CreateDefaultSubobject<USphereComponent>("Head Collision");
-	m_pHeadCollision->InitSphereRadius(0.5f);
-
+	m_pHeadCollision = CreateDefaultSubobject<UBoxComponent>("Head Collision");
+	
 	m_pHeadCollision->SetupAttachment(m_pPickupMeshComponent);
-	m_pHeadCollision->SetRelativeLocation(FVector(HALF_ARROW_LENGTH, 0, 0));
-
+	m_pHeadCollision->SetRelativeLocation(FVector(HALF_ARROW_LENGTH-10, 0, 0));
+	m_pHeadCollision->SetBoxExtent(FVector(10, 1, 1));
+	
 	m_pHeadCollision->bGenerateOverlapEvents = true;
 	m_pHeadCollision->OnComponentBeginOverlap.AddDynamic(this, &AArrow::OnOverlapBeginHead);
-	
 	
 	// Arrow Tail Collision Sphere
 
@@ -41,10 +41,8 @@ AArrow::AArrow() {
 	m_bIsNotched = false;
 	m_bIsFired = false;
 
-	m_pHeadCollision->SetVisibility(true, true); // debug only
 	m_pHeadCollision->SetHiddenInGame(false, true); // debug only
-	m_pTailCollision->SetVisibility(true, true); // debug only
-	m_pTailCollision->SetHiddenInGame(false, true); // debug only
+
 }
 
 void AArrow::PreInit() {
@@ -60,8 +58,8 @@ void AArrow::OnPickup_Implementation(ABaseController* controller) {
 	
 
 	// if user is holding bow, use custom pickup attachment
-	AActor* hand = (AActor*) controller; // manual C++ cast because Unreal's cast macro freaks out otherwise
-	//if (hand && controller != g_archeryGlobals.getBowHand()) {
+	AActor* hand = controller->GetActor(); // manual C++ cast because Unreal's cast macro freaks out otherwise
+
 	if (hand && controller == g_archeryGlobals.getArrowHand()) {
 			DetachFromActor(FDetachmentTransformRules::KeepWorldTransform);
 		
@@ -111,7 +109,24 @@ void AArrow::FireArrow(float velocity, FVector forward) {
 
 
 void AArrow::OnOverlapBeginHead(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult) {
-	if (m_bIsFired) m_bTipOverlap = true;
+	if ((OtherActor != nullptr) && (OtherActor != this) && (OtherComp != nullptr)) {
+
+		if (m_bIsFired && OtherActor->GetClass() != this->GetClass()) {
+
+			// if a target is hit
+			if (OtherActor->GetClass() == AArcheryTarget::StaticClass()) {
+				AArcheryTarget* hitTarget = Cast<AArcheryTarget>(OtherActor);
+				if (hitTarget) {
+					hitTarget->Deactivate(m_fVelocity);
+					g_archeryGlobals.m_iScore++;
+				}
+			}
+			// otherwise, stop the arrow
+			else {
+				m_bTipOverlap = true;
+			}
+		}
+	}
 }
 
 void AArrow::DefaultThink() {

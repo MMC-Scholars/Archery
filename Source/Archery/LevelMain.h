@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "VRBase/ABaseEntity/ABaseEntity.h"
 #include "Components/TextRenderComponent.h"
+#include <string>
 #include "LevelMain.generated.h"
 
 /**
@@ -19,11 +20,16 @@ public:
 	// Constructor
 	ALevelMain();
 
-	UTextRenderComponent* m_pScore;
-	unsigned int m_iScore;
+	// Variables
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Score Text")
+		UTextRenderComponent* m_pScore;
+
+	// Functions
 
 	void PostInit();
 
 	void DefaultThink();
+
+	void SetScore(int score);
 
 };

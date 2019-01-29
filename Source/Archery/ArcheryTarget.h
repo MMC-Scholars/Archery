@@ -4,7 +4,10 @@
 
 #include "CoreMinimal.h"
 #include "VRBase/ABaseEntity/ABaseEntity.h"
-#include "Engine/Texture2D.h"
+#include "Components/StaticMeshComponent.h"
+#include "Engine/StaticMesh.h"
+#include "Components/DestructibleComponent.h"
+#include "Engine/DestructibleMesh.h"
 #include "ArcheryTarget.generated.h"
 
 /**
@@ -17,32 +20,20 @@ class ARCHERY_API AArcheryTarget : public ABaseEntity
 	
 public:
 	// Constructor
-	//AArcheryTarget();
+	AArcheryTarget();
+
+	// Components
+	UDestructibleComponent* m_pTargetMesh;
 
 	// Variables
 	bool m_bActive;
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Target Image")
-	UTexture2D* m_pImg;
 	
 	// Functions
 	void PreInit() override;
 
 	void Activate();
-	void Deactivate();
+	void Deactivate(float force);
 
-	
-// set image dynamically from within the editor
-#if WITH_EDITOR
-virtual void PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent) {
-
-	FName PropertyName = (PropertyChangedEvent.Property != nullptr)
-	? PropertyChangedEvent.Property->GetFName() : NAME_None;
-
-	if (m_pImg != nullptr) {}
-
-	Super::PostEditChangeProperty(PropertyChangedEvent);
-}
-#endif
-
-
+	void DefaultThink() override;
 };
+

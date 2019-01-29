@@ -12,6 +12,13 @@ private:
 	AArcheryController* m_ArrowHand;
 
 public:
+
+	// Variables
+
+	unsigned int m_iScore;
+
+	// Functions
+
 	AArcheryController* getBowHand() {
 		return m_BowHand;
 	}

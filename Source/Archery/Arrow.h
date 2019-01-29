@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "VRBase/APickup/APickup.h"
 #include "Components/SphereComponent.h"
+#include "Components/BoxComponent.h"
 #include "Arrow.generated.h"
 
 UCLASS()
@@ -22,7 +23,7 @@ public:
 	virtual void DefaultThink() override;
 
 	// Components
-	USphereComponent* m_pHeadCollision;
+	UBoxComponent* m_pHeadCollision;
 	USphereComponent* m_pTailCollision;
 
 	// Variables
