@@ -3,7 +3,10 @@
 #include "LevelMain.h"
 #include "System/NLogger.h"
 #include "Archery.h"
-
+/*
+#include "TeleportNavGameBounds.h"
+#include "Runtime/Engine/Classes/Kismet/GameplayStatics.h"
+*/
 ALevelMain::ALevelMain() {
 	g_archeryGlobals.m_iScore = 0;
 
@@ -15,7 +18,27 @@ ALevelMain::ALevelMain() {
 }
 
 void ALevelMain::PostInit() {
+	//
+	//
+	//
+	//TODO - move when available on game start
+	//TEMP
+	// ON GAME START. MOVE THIS WHEN AVAILABLE
+	/*
+	TArray<AActor*> FoundActors;
+	UGameplayStatics::GetAllActorsOfClass(GetWorld(), ATeleportNavGameBounds::StaticClass(), FoundActors);
+	for (int i = 0; i < FoundActors.Num(); i++) {
+	ATeleportNavGameBounds* bounds = Cast<ATeleportNavGameBounds>(FoundActors[i]);
+	if (bounds) {
+	g_pBasePawn->m_pTeleportBounds = bounds;
+	break;
+	}
+	}
+	*/
 
+	//
+	//
+	//
 }
 
 void ALevelMain::DefaultThink() {

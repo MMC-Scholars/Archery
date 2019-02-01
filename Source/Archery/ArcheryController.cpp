@@ -29,7 +29,6 @@ void AArcheryController::OnButtonsChanged() {
 				}
 
 				if (m_aOverlapActors.Num() == 0 || nearBow) {
-				//if (m_aOverlapActors.Num() == 0 || (m_aOverlapActors.Num() == 2 && nearBow)) {
 					FVector loc = this->GetActorLocation();
 					AArrow* currentArrow = (AArrow*)GetWorld()->SpawnActor(AArrow::StaticClass(), &loc);
 				}

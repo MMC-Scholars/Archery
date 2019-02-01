@@ -27,6 +27,7 @@ public:
 
 	// Variables
 	bool m_bActive;
+	bool m_bMoving;
 	
 	// Functions
 	void PreInit() override;

@@ -9,8 +9,6 @@ UCLASS()
 class ARCHERY_API AArcheryController : public ABaseController {
 	GENERATED_BODY()
 	
-private:
-
 public:
 	void OnButtonsChanged() override;
 };

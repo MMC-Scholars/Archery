@@ -24,6 +24,8 @@ void AArcheryTarget::PreInit() {
 void AArcheryTarget::Activate() {
 	m_bActive = true;
 	m_pTargetMesh->SetSimulatePhysics(false);
+
+	m_bMoving = false;
 }
 
 void AArcheryTarget::Deactivate(float force) {
@@ -31,13 +33,17 @@ void AArcheryTarget::Deactivate(float force) {
 
 	m_pTargetMesh->SetSimulatePhysics(true);
 	m_pTargetMesh->ApplyDamage(force/10, m_pTargetMesh->GetComponentLocation(), m_pTargetMesh->GetComponentLocation(), force);
+
+	m_bMoving = false;
 }
 
 void AArcheryTarget::DefaultThink() {
-	//FVector loc = m_pTargetMesh->GetComponentLocation();
-	//m_pTargetMesh->SetRelativeLocation(FVector(loc.X-0.1, loc.Y, loc.Z));
+	if (m_bActive) {
 
-	FRotator rot = m_pTargetMesh->GetComponentRotation();
-	m_pTargetMesh->SetRelativeRotation(FRotator(rot.Pitch + 0.1, rot.Yaw + 0.1, rot.Roll + 0.1));
+		// Test
+		//FVector loc = m_pTargetMesh->GetComponentLocation();
+		//m_pTargetMesh->SetRelativeLocation(FVector(loc.X - 0.1, loc.Y + 0.2, loc.Z + 0.05));
 
+
+	}
 }
