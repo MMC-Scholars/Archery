@@ -27,7 +27,10 @@ public:
 
 	// Variables
 	bool m_bActive;
+	bool m_bDeactivation;
 	bool m_bMoving;
+
+	float m_fDeactivateTime;
 	
 	// Functions
 	void PreInit() override;

@@ -7,6 +7,7 @@
 #include "ArrowPhysics.h"
 #include "Bow.h"
 #include "ArcheryTarget.h"
+#include "ArcheryTargetManager.h"
 
 #define ARROW_MESH L"StaticMesh'/Game/Meshes/Arrow.Arrow'"
 const int HALF_ARROW_LENGTH = 37;
@@ -112,8 +113,8 @@ void AArrow::OnOverlapBeginHead(UPrimitiveComponent* OverlappedComp, AActor* Oth
 	if ((OtherActor != nullptr) && (OtherActor != this) && (OtherComp != nullptr)) {
 
 		if (m_bIsFired && OtherActor->GetClass() != this->GetClass()) {
-
-			// if a target is hit
+			
+			// if arrow hits target
 			if (OtherActor->GetClass() == AArcheryTarget::StaticClass()) {
 				AArcheryTarget* hitTarget = Cast<AArcheryTarget>(OtherActor);
 				if (hitTarget) {
@@ -121,10 +122,15 @@ void AArrow::OnOverlapBeginHead(UPrimitiveComponent* OverlappedComp, AActor* Oth
 					g_archeryGlobals.m_iScore++;
 				}
 			}
+			// if arrow hits target manager
+			else if (OtherActor->GetClass() == AArcheryTargetManager::StaticClass()) {
+				// ignore
+			}
 			// otherwise, stop the arrow
 			else {
 				m_bTipOverlap = true;
 			}
+
 		}
 	}
 }

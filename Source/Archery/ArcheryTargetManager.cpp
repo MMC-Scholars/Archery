@@ -6,15 +6,17 @@
 AArcheryTargetManager::AArcheryTargetManager() {
 	m_pSpawnVol = CreateDefaultSubobject<UBoxComponent>("Spawn Volume");
 
-	if (!m_iMaxTargets || m_iMaxTargets < 0) m_iMaxTargets = 20;
-
 	m_bSpawning = false;
 
-	//TODO - remove this later
-	BeginSpawn();
+	
 }
 
-void AArcheryTargetManager::BeginSpawn() {
+void AArcheryTargetManager::BeginSpawn(int numTargets) {
+
+	if (!numTargets || numTargets < 1) numTargets = 20;
+	m_iMaxTargets = numTargets;
+
+	// start spawning
 	m_bSpawning = true;
 }
 
@@ -22,12 +24,28 @@ void AArcheryTargetManager::EndSpawn() {
 	m_bSpawning = false;
 }
 
+FVector AArcheryTargetManager::randBoundLoc() {
+
+	FVector bounds = m_pSpawnVol->GetScaledBoxExtent();
+	FVector loc = m_pSpawnVol->GetComponentLocation();
+
+	FVector i = loc - (bounds);
+	FVector f = loc + (bounds);
+
+	float nx = FMath::RandRange(i.X, f.X);
+	float ny = FMath::RandRange(i.Y, f.Y);
+	float nz = FMath::RandRange(i.Z, f.Z);
+
+	return FVector(nx, ny, nz);
+}
+
 void AArcheryTargetManager::DefaultThink() {
 	if (m_bSpawning) {
 
 		if (m_aTargets.Num() < m_iMaxTargets) {
-			//TODO - random location
-			FVector loc = this->GetActorLocation();
+
+			// random spawn location
+			FVector loc = randBoundLoc();
 
 			AArcheryTarget* target = (AArcheryTarget*)GetWorld()->SpawnActor(AArcheryTarget::StaticClass(), &loc);
 

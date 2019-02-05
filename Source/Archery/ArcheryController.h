@@ -12,5 +12,3 @@ class ARCHERY_API AArcheryController : public ABaseController {
 public:
 	void OnButtonsChanged() override;
 };
-
-#define DEFAULT_CONTROLLER_CLASS AArcheryController

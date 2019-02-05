@@ -20,15 +20,17 @@ void AArcheryController::OnButtonsChanged() {
 
 			if (m_iButtonsPressed & IN_TRIGGER) {
 
-				// if controller is not near a pickup, or is near the bow, spawn an arrow
+				// if controller is not near a pickup, or is near "helping actors", spawn an arrow
 				
-				bool nearBow = false;
+				bool nearHelpingActor = false;
 				for (int i = 0; i < m_aOverlapActors.Num(); i++) {
-					ABow* bow = Cast<ABow>(m_aOverlapActors[i]);
-					if (bow) nearBow = true;
+
+					if (m_aOverlapActors[i]->GetClass() == ABow::StaticClass()) nearHelpingActor = true;
+					if (m_aOverlapActors[i]->GetClass() == AArcheryController::StaticClass()) nearHelpingActor = true;
+
 				}
 
-				if (m_aOverlapActors.Num() == 0 || nearBow) {
+				if (m_aOverlapActors.Num() == 0 || nearHelpingActor) {
 					FVector loc = this->GetActorLocation();
 					AArrow* currentArrow = (AArrow*)GetWorld()->SpawnActor(AArrow::StaticClass(), &loc);
 				}

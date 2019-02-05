@@ -3,10 +3,10 @@
 #include "LevelMain.h"
 #include "System/NLogger.h"
 #include "Archery.h"
-/*
-#include "TeleportNavGameBounds.h"
-#include "Runtime/Engine/Classes/Kismet/GameplayStatics.h"
-*/
+
+#define MAX_NUM_TARGETS 20
+#define MAX_NUM_ARROWS 15
+
 ALevelMain::ALevelMain() {
 	g_archeryGlobals.m_iScore = 0;
 
@@ -18,27 +18,7 @@ ALevelMain::ALevelMain() {
 }
 
 void ALevelMain::PostInit() {
-	//
-	//
-	//
-	//TODO - move when available on game start
-	//TEMP
-	// ON GAME START. MOVE THIS WHEN AVAILABLE
-	/*
-	TArray<AActor*> FoundActors;
-	UGameplayStatics::GetAllActorsOfClass(GetWorld(), ATeleportNavGameBounds::StaticClass(), FoundActors);
-	for (int i = 0; i < FoundActors.Num(); i++) {
-	ATeleportNavGameBounds* bounds = Cast<ATeleportNavGameBounds>(FoundActors[i]);
-	if (bounds) {
-	g_pBasePawn->m_pTeleportBounds = bounds;
-	break;
-	}
-	}
-	*/
-
-	//
-	//
-	//
+	StartGame();
 }
 
 void ALevelMain::DefaultThink() {
@@ -59,4 +39,8 @@ void ALevelMain::SetScore(int score) {
 	strcat_s(str, buffer);
 
 	m_pScore->SetText(FText::AsCultureInvariant(str));
+}
+
+void ALevelMain::StartGame() {
+	m_pTargetManager->BeginSpawn(MAX_NUM_TARGETS);
 }

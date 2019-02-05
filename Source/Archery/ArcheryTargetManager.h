@@ -23,19 +23,18 @@ public:
 	// Components
 	UBoxComponent *m_pSpawnVol;
 
-	// Variables
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Targets)
-		int m_iMaxTargets;
-
 	bool m_bSpawning;
 
 	TArray<AArcheryTarget*> m_aTargets;
 
+	int m_iMaxTargets;
+
 	// Functions
 
-	void BeginSpawn();
-
+	void BeginSpawn(int numTargets);
 	void EndSpawn();
+
+	FVector randBoundLoc();
 
 	virtual void DefaultThink() override;
 

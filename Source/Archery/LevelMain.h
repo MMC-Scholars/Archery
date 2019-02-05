@@ -5,7 +5,7 @@
 #include "CoreMinimal.h"
 #include "VRBase/ABaseEntity/ABaseEntity.h"
 #include "Components/TextRenderComponent.h"
-#include <string>
+#include "ArcheryTargetManager.h"
 #include "LevelMain.generated.h"
 
 /**
@@ -20,16 +20,21 @@ public:
 	// Constructor
 	ALevelMain();
 
+	virtual void PostInit() override;
+	virtual void DefaultThink() override;
+
 	// Variables
+
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Score Text")
 		UTextRenderComponent* m_pScore;
 
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Target Manager")
+		AArcheryTargetManager* m_pTargetManager;
+
 	// Functions
 
-	void PostInit();
-
-	void DefaultThink();
-
 	void SetScore(int score);
+
+	void StartGame();
 
 };
