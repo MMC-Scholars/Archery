@@ -25,15 +25,24 @@ public:
 
 	// Variables
 
+	// UProperty only to change the material rendering the score
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Score Text")
 		UTextRenderComponent* m_pScore;
 
+	// connect to ATargetManager placed in world
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Target Manager")
 		AArcheryTargetManager* m_pTargetManager;
 
-	// Functions
+	// timer
+	bool m_bIsTiming;
+	float m_fStartTime; // simply stores the start time
+	float m_fDisplayTime; // displayed time
+	int m_fMaxTime; // stores the maximum amount of time left
 
-	void SetScore(int score);
+	// Functions
+	void ResetGame();
+
+	void SetScoreboard(int score, float time);
 
 	void StartGame();
 

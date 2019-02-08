@@ -29,6 +29,7 @@ public:
 	bool m_bActive;
 	bool m_bDeactivation;
 	bool m_bMoving;
+	bool m_bDeletable; // signifies when the ArcheryTargetManager is able to destroy the actor
 
 	float m_fDeactivateTime;
 	

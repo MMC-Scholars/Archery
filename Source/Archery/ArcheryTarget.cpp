@@ -8,6 +8,8 @@
 const float DEACTIVATE_TIME_SEC = 0.5;
 
 AArcheryTarget::AArcheryTarget() {
+	m_bDeletable = false;
+
 	static ConstructorHelpers::FObjectFinder<UDestructibleMesh>destructMesh(DESTRUCTIBLE_MESH);
 
 	m_pTargetMesh = CreateDefaultSubobject<UDestructibleComponent>("Target");
@@ -59,6 +61,7 @@ void AArcheryTarget::DefaultThink() {
 			if ((g_pGlobals->curtime - m_fDeactivateTime) > DEACTIVATE_TIME_SEC) {
 				m_bDeactivation = false;
 				m_pTargetMesh->SetSimulatePhysics(false);
+				m_bDeletable = true;
 			}
 		}
 	}

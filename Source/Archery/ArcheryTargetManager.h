@@ -26,7 +26,6 @@ public:
 	bool m_bSpawning;
 
 	TArray<AArcheryTarget*> m_aTargets;
-
 	int m_iMaxTargets;
 
 	// Functions
