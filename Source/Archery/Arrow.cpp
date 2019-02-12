@@ -57,6 +57,8 @@ void AArrow::OnPickup_Implementation(ABaseController* controller) {
 	if (m_bIsNotched) m_bIsNotched = false;
 	if (m_bIsFired) m_bIsFired = false;
 	
+	m_pPickupMeshComponent->SetRenderCustomDepth(false);
+	m_pPickupMeshComponent->SetSimulatePhysics(false);
 
 	// if user is holding bow, use custom pickup attachment
 	AActor* hand = controller->GetActor(); // manual C++ cast because Unreal's cast macro freaks out otherwise
@@ -65,6 +67,9 @@ void AArrow::OnPickup_Implementation(ABaseController* controller) {
 			DetachFromActor(FDetachmentTransformRules::KeepWorldTransform);
 		
 		AArcheryController* archeryHand = Cast<AArcheryController>(hand);
+
+		m_pPickupMeshComponent->SetRenderCustomDepth(false);
+		m_pPickupMeshComponent->SetSimulatePhysics(false);
 
 		if (archeryHand) {
 			m_pPickupMeshComponent->SetRenderCustomDepth(false);
@@ -90,6 +95,7 @@ void AArrow::OnOverlapBeginTail(UPrimitiveComponent* OverlappedComp, AActor* Oth
 
 			bow->ArrowNotch(this);
 			m_bIsNotched = true;
+
 		}
 	}
 
@@ -148,5 +154,12 @@ void AArrow::DefaultThink() {
 
 		if (m_bTipOverlap) m_bIsFired = false;
 	}
-	
+	/*
+	// fixing arrows simulating physics
+	if (m_bIsNotched) {
+		m_pPickupMeshComponent->SetRenderCustomDepth(false);
+		m_pPickupMeshComponent->SetSimulatePhysics(false);
+	}
+	*/
+
 }

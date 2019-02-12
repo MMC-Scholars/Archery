@@ -100,6 +100,7 @@ void ABow::ArrowNotch(AArrow* arrow) {
 	// if an arrow is somehow already notched, detatch and simulate physics
 	if (m_pNotchedArrow) {
 		m_pNotchedArrow->DetachFromActor(FDetachmentTransformRules::KeepWorldTransform);
+		m_pNotchedArrow->m_bIsNotched = false;
 		m_pNotchedArrow->m_pPickupMeshComponent->SetSimulatePhysics(true);
 	}
 	m_pNotchedArrow = arrow;

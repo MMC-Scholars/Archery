@@ -32,7 +32,6 @@ void AArcheryController::OnButtonsChanged() {
 				}
 				
 				if (m_aOverlapActors.Num() == 0 || nearHelpingActor) {
-					FVector loc = this->GetActorLocation();
 					
 					// max number of arrows only
 					if (m_aArrows.Num() >= MAX_NUM_ARROWS) {
@@ -41,11 +40,12 @@ void AArcheryController::OnButtonsChanged() {
 						arrowDeletable->DestroyEntity();
 					}
 					
+					FVector loc = this->GetActorLocation();
 					AArrow* currentArrow = (AArrow*)GetWorld()->SpawnActor(AArrow::StaticClass(), &loc);
 					m_aArrows.Insert(currentArrow, 0);
 
 				}
-
+				
 			}
 
 		}

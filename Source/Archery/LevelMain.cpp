@@ -5,7 +5,7 @@
 #include "Archery.h"
 
 #define MAX_NUM_TARGETS 20
-#define COUNTDOWN_TIME 10
+#define COUNTDOWN_TIME 13
 #define INITIAL_TIME 60
 
 ALevelMain::ALevelMain() {
@@ -30,6 +30,8 @@ void ALevelMain::ResetGame() {
 	g_archeryGlobals.m_iScore = 0;
 	// scoreboard
 	SetScoreboard(g_archeryGlobals.m_iScore, m_fDisplayTime);
+	// countdown
+	(m_pTimerText->GetTextRender())->SetText(" ");
 }
 
 void ALevelMain::StartGame() {
@@ -43,22 +45,8 @@ void ALevelMain::StartGame() {
 }
 
 void ALevelMain::SetScoreboard(int score, float time) {
-
-	char scoreBf[sizeof(int)];
-	snprintf(scoreBf, sizeof(int), "%d", score);
-
-	char timerBf[sizeof(float)];
-	
-	//TODO snprintf
-	snprintf(timerBf, sizeof(float), "%4.2f", time);
-
 	char str[100];
-	
-	strcpy_s(str, "Score: ");
-	strcat_s(str, scoreBf);
-	strcat_s(str, "\nTime: ");
-	strcat_s(str, timerBf);
-
+	sprintf_s(str, "Score: %d\nTime: %4.2f", score, time);
 	(m_pScoreText->GetTextRender())->SetText(FText::AsCultureInvariant(str));
 }
 
@@ -70,10 +58,8 @@ void ALevelMain::DefaultThink() {
 			m_iDisplayCount = (int) ( COUNTDOWN_TIME - (g_pGlobals->curtime - m_fStartCount) );
 			// if time is up
 			if (m_iDisplayCount <= 0) {
-				Msg("GO!");
-				/*
-				(m_pTimerText->GetTextRender())->SetText(FText::AsCultureInvariant("GO!"));
-				*/
+
+				(m_pTimerText->GetTextRender())->SetText("GO!");
 				
 				// setup game
 				// start spawning targets
@@ -85,15 +71,9 @@ void ALevelMain::DefaultThink() {
 				m_bIsCountdown = false;
 			}
 			else {
-				Msg("%i", m_iDisplayCount);
-				//TODO read access violation
-				/*
-				char *buffer = "";
-				
-				sprintf_s(buffer, 5*sizeof(char), "%d", m_iDisplayCount);
-
-				(m_pTimerText->GetTextRender())->SetText(FText::AsCultureInvariant(buffer));
-				*/
+				char str[sizeof(int)];
+				sprintf_s(str, "%d", m_iDisplayCount);
+				(m_pTimerText->GetTextRender())->SetText(str);
 			}
 		}
 		else {
