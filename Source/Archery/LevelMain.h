@@ -5,6 +5,9 @@
 #include "CoreMinimal.h"
 #include "VRBase/ABaseEntity/ABaseEntity.h"
 #include "Components/TextRenderComponent.h"
+#include "Engine/TextRenderActor.h"
+#include "Sound/SoundCue.h"
+#include "Components/AudioComponent.h"
 #include "ArcheryTargetManager.h"
 #include "LevelMain.generated.h"
 
@@ -27,11 +30,42 @@ public:
 
 	// UProperty only to change the material rendering the score
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Score Text")
-		UTextRenderComponent* m_pScore;
+	ATextRenderActor* m_pScoreText;
+
+	// connect to timer TextRender placed in world
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Timer Text")
+	ATextRenderActor* m_pTimerText;
 
 	// connect to ATargetManager placed in world
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Target Manager")
-		AArcheryTargetManager* m_pTargetManager;
+	AArcheryTargetManager* m_pTargetManager;
+
+	// game music
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Button)
+	USoundCue* m_pGameMusicCue;
+	UAudioComponent* m_pGameMusic;
+
+#if WITH_EDITOR
+	virtual void PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent) {
+
+		FName PropertyName = (PropertyChangedEvent.Property != nullptr)
+			? PropertyChangedEvent.Property->GetFName() : NAME_None;
+
+		// set sound cue from the editor
+		if (m_pGameMusic != nullptr &&
+			m_pGameMusicCue != nullptr) {
+
+			m_pGameMusic->SetSound(m_pGameMusicCue);
+		}
+
+		Super::PostEditChangeProperty(PropertyChangedEvent);
+	}
+#endif
+
+	// countdown
+	bool m_bIsCountdown;
+	float m_fStartCount;
+	int m_iDisplayCount;
 
 	// timer
 	bool m_bIsTiming;

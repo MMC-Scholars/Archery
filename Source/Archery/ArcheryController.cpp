@@ -4,7 +4,8 @@
 #include "System/NLogger.h"
 #include "Archery.h"
 #include "Bow.h"
-#include "Arrow.h"
+
+#define MAX_NUM_ARROWS 15
 
 void AArcheryController::OnButtonsChanged() {
 
@@ -29,10 +30,20 @@ void AArcheryController::OnButtonsChanged() {
 					if (m_aOverlapActors[i]->GetClass() == AArcheryController::StaticClass()) nearHelpingActor = true;
 
 				}
-
+				
 				if (m_aOverlapActors.Num() == 0 || nearHelpingActor) {
 					FVector loc = this->GetActorLocation();
+					
+					// max number of arrows only
+					if (m_aArrows.Num() >= MAX_NUM_ARROWS) {
+						AArrow* arrowDeletable = m_aArrows[m_aArrows.Num() - 1];
+						m_aArrows.Remove(arrowDeletable);
+						arrowDeletable->DestroyEntity();
+					}
+					
 					AArrow* currentArrow = (AArrow*)GetWorld()->SpawnActor(AArrow::StaticClass(), &loc);
+					m_aArrows.Insert(currentArrow, 0);
+
 				}
 
 			}

@@ -5,16 +5,12 @@
 #include "Archery.h"
 
 #define MAX_NUM_TARGETS 20
-#define MAX_NUM_ARROWS 15
-#define INITIAL_TIME 20
-//TODO change this to 60
+#define COUNTDOWN_TIME 10
+#define INITIAL_TIME 60
 
 ALevelMain::ALevelMain() {
-	m_pScore = CreateDefaultSubobject<UTextRenderComponent>("Score Tracker");
-	m_pScore->SetTextRenderColor(FColor::White);
-	m_pScore->SetXScale(1.0f);
-	m_pScore->SetYScale(1.0f);
-	m_pScore->SetHorizontalAlignment(EHorizTextAligment::EHTA_Left);
+	m_pGameMusic = CreateDefaultSubobject<UAudioComponent>("Music");
+	m_pGameMusic->bAutoActivate = false;
 }
 
 void ALevelMain::PostInit() {
@@ -22,10 +18,13 @@ void ALevelMain::PostInit() {
 }
 
 void ALevelMain::ResetGame() {
+	// stop music
+	if (m_pGameMusicCue) m_pGameMusic->Stop();
 	// targets
 	m_pTargetManager->EndSpawn();
 	// timer
 	m_bIsTiming = false;
+	m_bIsCountdown = false;
 	m_fDisplayTime = 0.00;
 	// score
 	g_archeryGlobals.m_iScore = 0;
@@ -34,11 +33,12 @@ void ALevelMain::ResetGame() {
 }
 
 void ALevelMain::StartGame() {
-	// start spawning targets
-	m_pTargetManager->BeginSpawn(MAX_NUM_TARGETS);
-	// start timer
-	m_fMaxTime = INITIAL_TIME;
-	m_fStartTime = g_pGlobals->curtime;
+	m_bIsCountdown = true;
+	m_fStartCount = g_pGlobals->curtime;
+	
+	// play music
+	if (m_pGameMusicCue) m_pGameMusic->Play();
+
 	m_bIsTiming = true;
 }
 
@@ -48,11 +48,8 @@ void ALevelMain::SetScoreboard(int score, float time) {
 	snprintf(scoreBf, sizeof(int), "%d", score);
 
 	char timerBf[sizeof(float)];
-	/*
-	int time1 = (int) time;
-	int time2 = (int) (time * 100 - time1 * 100);
-	snprintf(timerBf, sizeof(float), "%2d.%2d", time1, time2);
-	*/
+	
+	//TODO snprintf
 	snprintf(timerBf, sizeof(float), "%4.2f", time);
 
 	char str[100];
@@ -62,19 +59,52 @@ void ALevelMain::SetScoreboard(int score, float time) {
 	strcat_s(str, "\nTime: ");
 	strcat_s(str, timerBf);
 
-	m_pScore->SetText(FText::AsCultureInvariant(str));
+	(m_pScoreText->GetTextRender())->SetText(FText::AsCultureInvariant(str));
 }
 
 void ALevelMain::DefaultThink() {
+
 	if (m_bIsTiming) {
-		// timer
-		m_fDisplayTime = m_fMaxTime - (g_pGlobals->curtime - m_fStartTime);
-		// scoreboard
-		SetScoreboard(g_archeryGlobals.m_iScore, m_fDisplayTime);
+		if (m_bIsCountdown) {
+			// countdown
+			m_iDisplayCount = (int) ( COUNTDOWN_TIME - (g_pGlobals->curtime - m_fStartCount) );
+			// if time is up
+			if (m_iDisplayCount <= 0) {
+				Msg("GO!");
+				/*
+				(m_pTimerText->GetTextRender())->SetText(FText::AsCultureInvariant("GO!"));
+				*/
+				
+				// setup game
+				// start spawning targets
+				m_pTargetManager->BeginSpawn(MAX_NUM_TARGETS);
+				// start timer
+				m_fMaxTime = INITIAL_TIME;
+				m_fStartTime = g_pGlobals->curtime;
 
-		// if time is up
-		if (m_fDisplayTime <= 0) ResetGame();
+				m_bIsCountdown = false;
+			}
+			else {
+				Msg("%i", m_iDisplayCount);
+				//TODO read access violation
+				/*
+				char *buffer = "";
+				
+				sprintf_s(buffer, 5*sizeof(char), "%d", m_iDisplayCount);
 
+				(m_pTimerText->GetTextRender())->SetText(FText::AsCultureInvariant(buffer));
+				*/
+			}
+		}
+		else {
+			// timer
+			m_fDisplayTime = m_fMaxTime - (g_pGlobals->curtime - m_fStartTime);
+			// scoreboard
+			SetScoreboard(g_archeryGlobals.m_iScore, m_fDisplayTime);
+
+			// if time is up
+			if (m_fDisplayTime <= 0) ResetGame();
+		}
 	}
 
 }
