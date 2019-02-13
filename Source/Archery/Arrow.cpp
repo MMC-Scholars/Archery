@@ -42,7 +42,7 @@ AArrow::AArrow() {
 	m_bIsNotched = false;
 	m_bIsFired = false;
 
-	m_pHeadCollision->SetHiddenInGame(false, true); // debug only
+	//m_pHeadCollision->SetHiddenInGame(false, true); // debug only
 
 }
 
@@ -88,14 +88,11 @@ void AArrow::OnPickup_Implementation(ABaseController* controller) {
 void AArrow::OnOverlapBeginTail(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult) {
 	
 	ABow* bow = Cast<ABow>(OtherActor);
-	if (bow && !m_bIsNotched && !m_bIsFired) {
+	if (bow && !m_bIsNotched && !m_bIsFired) { // if current arrow is not already notched or fired
 		if (m_aParentActors.Contains(g_archeryGlobals.getArrowHand())) {
-			DetachFromActor(FDetachmentTransformRules::KeepWorldTransform);
-			AttachToActor(bow, FAttachmentTransformRules::SnapToTargetNotIncludingScale);
-
+			
 			bow->ArrowNotch(this);
-			m_bIsNotched = true;
-
+	
 		}
 	}
 
@@ -124,14 +121,19 @@ void AArrow::OnOverlapBeginHead(UPrimitiveComponent* OverlappedComp, AActor* Oth
 			if (OtherActor->GetClass() == AArcheryTarget::StaticClass()) {
 				AArcheryTarget* hitTarget = Cast<AArcheryTarget>(OtherActor);
 				if (hitTarget) {
-					hitTarget->Deactivate(m_fVelocity);
+
+					// increment score
 					g_archeryGlobals.m_iScore++;
+					
+					// deactivate target
+					hitTarget->Deactivate(m_fVelocity);
+
 				}
 			}
+
 			// if arrow hits target manager
-			else if (OtherActor->GetClass() == AArcheryTargetManager::StaticClass()) {
-				// ignore
-			}
+			else if (OtherActor->GetClass() == AArcheryTargetManager::StaticClass()) {/* ignore */}
+
 			// otherwise, stop the arrow
 			else {
 				m_bTipOverlap = true;
@@ -154,12 +156,5 @@ void AArrow::DefaultThink() {
 
 		if (m_bTipOverlap) m_bIsFired = false;
 	}
-	/*
-	// fixing arrows simulating physics
-	if (m_bIsNotched) {
-		m_pPickupMeshComponent->SetRenderCustomDepth(false);
-		m_pPickupMeshComponent->SetSimulatePhysics(false);
-	}
-	*/
 
 }

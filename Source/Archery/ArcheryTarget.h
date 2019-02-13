@@ -32,12 +32,17 @@ public:
 	bool m_bDeletable; // signifies when the ArcheryTargetManager is able to destroy the actor
 
 	float m_fDeactivateTime;
-	
+	float m_fDeactivateTimeFinal;
+
 	// Functions
 	void PreInit() override;
 
 	void Activate();
-	void Deactivate(float force);
+	#define DEACTIVATE_TIME_SEC 0.5
+	void Deactivate(float force, float time = DEACTIVATE_TIME_SEC);
+	
+	UFUNCTION()
+	void OnTargetOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
 
 	void DefaultThink() override;
 };

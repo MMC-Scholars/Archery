@@ -5,10 +5,10 @@
 #include "Archery.h"
 
 #define DESTRUCTIBLE_MESH L"DestructibleMesh'/Game/Meshes/target_DM.target_DM'"
-const float DEACTIVATE_TIME_SEC = 0.5;
 
 AArcheryTarget::AArcheryTarget() {
 	m_bDeletable = false;
+	m_fDeactivateTimeFinal = DEACTIVATE_TIME_SEC;
 
 	static ConstructorHelpers::FObjectFinder<UDestructibleMesh>destructMesh(DESTRUCTIBLE_MESH);
 
@@ -16,8 +16,10 @@ AArcheryTarget::AArcheryTarget() {
 	m_pTargetMesh->SetDestructibleMesh(destructMesh.Object);
 
 	RootComponent = m_pTargetMesh;
-
+	
 	m_pTargetMesh->bGenerateOverlapEvents = true;
+	m_pTargetMesh->OnComponentBeginOverlap.AddDynamic(this, &AArcheryTarget::OnTargetOverlap);
+	
 }
 
 void AArcheryTarget::PreInit() {
@@ -36,16 +38,23 @@ void AArcheryTarget::Activate() {
 	
 }
 
-void AArcheryTarget::Deactivate(float force) {
+void AArcheryTarget::Deactivate(float force, float time) {
 	m_bActive = false;
 	m_bMoving = false;
 
 	m_pTargetMesh->SetSimulatePhysics(true);
 	m_pTargetMesh->ApplyDamage(force/10, m_pTargetMesh->GetComponentLocation(), m_pTargetMesh->GetComponentLocation(), force);
 
+	m_fDeactivateTimeFinal = time;
 	m_fDeactivateTime = g_pGlobals->curtime;
 
 	m_bDeactivation = true;
+}
+
+void AArcheryTarget::OnTargetOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult) {
+	if ((OtherActor != nullptr) && (OtherActor != this) && (OtherComp != nullptr)) {
+		Msg("\nOVERLAP");
+	}
 }
 
 void AArcheryTarget::DefaultThink() {
@@ -58,11 +67,13 @@ void AArcheryTarget::DefaultThink() {
 	else {
 		// Deactivation
 		if (m_bDeactivation) {
-			if ((g_pGlobals->curtime - m_fDeactivateTime) > DEACTIVATE_TIME_SEC) {
+
+			if ((g_pGlobals->curtime - m_fDeactivateTime) > m_fDeactivateTimeFinal) {
 				m_bDeactivation = false;
 				m_pTargetMesh->SetSimulatePhysics(false);
 				m_bDeletable = true;
 			}
+
 		}
 	}
 }

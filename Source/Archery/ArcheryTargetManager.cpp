@@ -21,11 +21,11 @@ void AArcheryTargetManager::BeginSpawn(int numTargets) {
 void AArcheryTargetManager::EndSpawn() {
 	m_bSpawning = false;
 	
-	// delete all targets
+	// delete each target
 	for (AArcheryTarget* target : m_aTargets) {
-		target->m_bDeletable = true;
+		target->Deactivate(100, 5);
 	}
-
+	
 }
 
 FVector AArcheryTargetManager::randBoundLoc() {

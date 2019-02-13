@@ -89,11 +89,8 @@ void ABow::OnPickup_Implementation(ABaseController* controller) {
 }
 
 void ABow::OnDrop_Implementation(ABaseController* controller) {
-
 	// clear bow and arrow hand assignments
-	if (m_aParentActors.Num() == 0) {
-		g_archeryGlobals.resetHands();
-	}
+	if (m_aParentActors.Num() == 0) g_archeryGlobals.resetHands();
 }
 
 void ABow::ArrowNotch(AArrow* arrow) {
@@ -103,7 +100,12 @@ void ABow::ArrowNotch(AArrow* arrow) {
 		m_pNotchedArrow->m_bIsNotched = false;
 		m_pNotchedArrow->m_pPickupMeshComponent->SetSimulatePhysics(true);
 	}
+
+	arrow->DetachFromActor(FDetachmentTransformRules::KeepWorldTransform);
+	arrow->AttachToActor(this, FAttachmentTransformRules::SnapToTargetNotIncludingScale);
+	
 	m_pNotchedArrow = arrow;
+	m_pNotchedArrow->m_bIsNotched = true;
 	m_fArrowVelocity = 0;
 }
 
@@ -126,6 +128,7 @@ void ABow::DefaultThink() {
 	// if holding bow and arrow
 	if (g_archeryGlobals.getBowHand()) {
 		if (m_pNotchedArrow) {
+			
 			// get the bow hand origin
 			FVector e = g_archeryGlobals.getBowHand()->GetActorLocation();
 			// get arrow hand origin
@@ -136,13 +139,14 @@ void ABow::DefaultThink() {
 			forward.GetSafeNormal(1.0f);
 			forward.Normalize(1.0f);
 
-			
-
 			if (m_pNotchedArrow->m_bIsNotched) { // arrow is notched
+
+				// verify physics is not simulating (bug fix)
+				m_pNotchedArrow->m_pPickupMeshComponent->SetSimulatePhysics(false);
+
 				// draw string
 				UTIL_DrawLine(m_pStringTop->GetComponentLocation(), s, &m_sStringProps);
 				UTIL_DrawLine(m_pStringBot->GetComponentLocation(), s, &m_sStringProps);
-
 												 
 				// set arrow location and rotation
 				FRotator rot = forward.Rotation();

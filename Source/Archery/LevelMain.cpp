@@ -5,7 +5,7 @@
 #include "Archery.h"
 
 #define MAX_NUM_TARGETS 20
-#define COUNTDOWN_TIME 13
+#define COUNTDOWN_TIME 11
 #define INITIAL_TIME 60
 
 ALevelMain::ALevelMain() {
