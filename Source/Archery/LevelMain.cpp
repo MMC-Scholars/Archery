@@ -6,6 +6,7 @@
 
 #define MAX_NUM_TARGETS 20
 #define COUNTDOWN_TIME 11
+#define ENDING_SLOW_SOUND_TIME 2
 #define INITIAL_TIME 60
 
 ALevelMain::ALevelMain() {
@@ -14,12 +15,18 @@ ALevelMain::ALevelMain() {
 }
 
 void ALevelMain::PostInit() {
+	// setup leaderboard
+	//TODO maybe write to a file at some point in the future?
+
+	if (m_pLeaderboardsText) (m_pLeaderboardsText->GetTextRender())->SetText(FText::FromString(ANSI_TO_TCHAR("High Scores:\n")));
+
 	if (m_pTargetManager) ResetGame();
 }
 
 void ALevelMain::ResetGame() {
 	// stop music
-	if (m_pGameMusicCue) m_pGameMusic->Stop();
+	m_fEndingStartTime = g_pGlobals->curtime;
+	m_bIsEnding = true;
 	// targets
 	m_pTargetManager->EndSpawn();
 	// timer
@@ -31,7 +38,7 @@ void ALevelMain::ResetGame() {
 	// scoreboard
 	SetScoreboard(g_archeryGlobals.m_iScore, m_fDisplayTime);
 	// countdown
-	(m_pTimerText->GetTextRender())->SetText(" ");
+	(m_pTimerText->GetTextRender())->SetText( FText::FromString(ANSI_TO_TCHAR(" ")) );
 }
 
 void ALevelMain::StartGame() {
@@ -47,7 +54,7 @@ void ALevelMain::StartGame() {
 void ALevelMain::SetScoreboard(int score, float time) {
 	char str[100];
 	sprintf_s(str, "Score: %d\nTime: %4.2f", score, time);
-	(m_pScoreText->GetTextRender())->SetText(FText::AsCultureInvariant(str));
+	(m_pScoreText->GetTextRender())->SetText( FText::FromString(ANSI_TO_TCHAR(str)) );
 }
 
 void ALevelMain::DefaultThink() {
@@ -59,13 +66,13 @@ void ALevelMain::DefaultThink() {
 			// if time is up
 			if (m_iDisplayCount <= 0) {
 
-				(m_pTimerText->GetTextRender())->SetText("GO!");
+				(m_pTimerText->GetTextRender())->SetText( FText::FromString(ANSI_TO_TCHAR("GO!")) );
 				
 				// setup game
 				// start spawning targets
 				m_pTargetManager->BeginSpawn(MAX_NUM_TARGETS);
 				// start timer
-				m_fMaxTime = INITIAL_TIME;
+				m_iMaxTime = INITIAL_TIME;
 				m_fStartTime = g_pGlobals->curtime;
 
 				m_bIsCountdown = false;
@@ -73,18 +80,49 @@ void ALevelMain::DefaultThink() {
 			else {
 				char str[sizeof(int)];
 				sprintf_s(str, "%d", m_iDisplayCount);
-				(m_pTimerText->GetTextRender())->SetText(str);
+				(m_pTimerText->GetTextRender())->SetText( FText::FromString(ANSI_TO_TCHAR(str)) );
 			}
 		}
 		else {
 			// timer
-			m_fDisplayTime = m_fMaxTime - (g_pGlobals->curtime - m_fStartTime);
+			m_fDisplayTime = m_iMaxTime - (g_pGlobals->curtime - m_fStartTime);
 			// scoreboard
 			SetScoreboard(g_archeryGlobals.m_iScore, m_fDisplayTime);
 
 			// if time is up
-			if (m_fDisplayTime <= 0) ResetGame();
+			if (m_fDisplayTime <= 0) {
+			
+				// leaderboards
+				if (m_pLeaderboardsText) {
+					FString old = m_pLeaderboardsText->GetTextRender()->Text.ToString();
+					char str[100];
+					sprintf_s(str, "\nYou earned %u points in %d seconds!", g_archeryGlobals.m_iScore, m_iMaxTime);
+					old.Append(str);
+
+					m_pLeaderboardsText->GetTextRender()->SetText(FText::FromString(old));
+				}
+
+				// reset game
+				ResetGame();
+			
+			}
 		}
+	}
+
+	if (m_bIsEnding) {
+		float timeElapsed = (g_pGlobals->curtime - m_fEndingStartTime);
+		if (timeElapsed >= ENDING_SLOW_SOUND_TIME) {
+			if (m_pGameMusicCue) {
+				m_pGameMusic->Stop();
+				m_pGameMusic->SetPitchMultiplier(1);
+			}
+			m_bIsEnding = false;
+		}
+		else {
+			float pitch = (ENDING_SLOW_SOUND_TIME - timeElapsed) / ENDING_SLOW_SOUND_TIME;
+			m_pGameMusic->SetPitchMultiplier(pitch);
+		}
+
 	}
 
 }

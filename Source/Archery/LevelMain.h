@@ -40,6 +40,10 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Target Manager")
 	AArcheryTargetManager* m_pTargetManager;
 
+	// connect to timer TextRender placed in world
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Leaderboards Text")
+	ATextRenderActor* m_pLeaderboardsText;
+
 	// game music
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Button)
 	USoundCue* m_pGameMusicCue;
@@ -71,7 +75,10 @@ public:
 	bool m_bIsTiming;
 	float m_fStartTime; // simply stores the start time
 	float m_fDisplayTime; // displayed time
-	int m_fMaxTime; // stores the maximum amount of time left
+	int m_iMaxTime; // stores the maximum amount of time left
+
+	bool m_bIsEnding; // resetting game
+	float m_fEndingStartTime;
 
 	// Functions
 	void ResetGame();

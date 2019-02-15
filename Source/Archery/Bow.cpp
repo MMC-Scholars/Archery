@@ -175,6 +175,7 @@ void ABow::DefaultThink() {
 				m_pNotchedArrow->FireArrow(m_fArrowVelocity, forward);
 				m_pNotchedArrow = nullptr;
 
+
 				// reset haptics
 				GetWorld()->GetFirstPlayerController()->SetHapticsByValue(0, 0, g_archeryGlobals.getArrowHand()->m_eWhichHand);
 			}

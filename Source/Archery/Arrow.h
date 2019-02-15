@@ -6,6 +6,8 @@
 #include "VRBase/APickup/APickup.h"
 #include "Components/SphereComponent.h"
 #include "Components/BoxComponent.h"
+#include "Particles/ParticleSystemComponent.h"
+#include "Particles/ParticleSystem.h"
 #include "Arrow.generated.h"
 
 UCLASS()
@@ -25,7 +27,10 @@ public:
 	// Components
 	UBoxComponent* m_pHeadCollision;
 	USphereComponent* m_pTailCollision;
-
+	//TODO remove this UPROPERTY later
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Test")
+	UParticleSystemComponent* m_pParticleSystem;
+	
 	// Variables
 	bool m_bTipOverlap;
 	bool m_bIsNotched;

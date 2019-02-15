@@ -10,6 +10,8 @@
 #include "ArcheryTargetManager.h"
 
 #define ARROW_MESH L"StaticMesh'/Game/Meshes/Arrow.Arrow'"
+#define PARTICLE_SYSTEM L"ParticleSystem'/Game/Meshes/materials/p_arrow.p_arrow'"
+#define PARTICLE_MAT L"Material'/Game/Meshes/materials/m_arrow_particle.m_arrow_particle'"
 const int HALF_ARROW_LENGTH = 37;
 
 AArrow::AArrow() {
@@ -37,6 +39,18 @@ AArrow::AArrow() {
 	m_pTailCollision->bGenerateOverlapEvents = true;
 	m_pTailCollision->OnComponentBeginOverlap.AddDynamic(this, &AArrow::OnOverlapBeginTail);
 
+	// Particle System
+
+	m_pParticleSystem = CreateDefaultSubobject<UParticleSystemComponent>("Particle System");
+	static ConstructorHelpers::FObjectFinder<UParticleSystem> PS(PARTICLE_SYSTEM);
+	m_pParticleSystem->SetTemplate(PS.Object);
+	m_pParticleSystem->SetRelativeLocation(FVector(-1 * (HALF_ARROW_LENGTH - 5), 0, 0));
+	
+	m_pParticleSystem->SetupAttachment(m_pPickupMeshComponent);
+
+	static ConstructorHelpers::FObjectFinder<UMaterial> Material(PARTICLE_MAT);
+	m_pParticleSystem->SetMaterial(0, (UMaterialInterface*) Material.Object);
+
 	// States
 	m_bTipOverlap = false;
 	m_bIsNotched = false;
@@ -49,6 +63,9 @@ AArrow::AArrow() {
 void AArrow::PreInit() {
 	// Super
 	APickup::PreInit();
+
+	// turn off particles
+	m_pParticleSystem->Deactivate();
 
 }
 
@@ -108,6 +125,7 @@ void AArrow::OnDrop_Implementation(ABaseController* controller) {
 void AArrow::FireArrow(float velocity, FVector forward) {
 	m_fVelocity = velocity;
 	m_vForward = forward;
+	m_pParticleSystem->Activate(true);
 	m_bIsFired = true;
 }
 
@@ -121,10 +139,6 @@ void AArrow::OnOverlapBeginHead(UPrimitiveComponent* OverlappedComp, AActor* Oth
 			if (OtherActor->GetClass() == AArcheryTarget::StaticClass()) {
 				AArcheryTarget* hitTarget = Cast<AArcheryTarget>(OtherActor);
 				if (hitTarget) {
-
-					// increment score
-					g_archeryGlobals.m_iScore++;
-					
 					// deactivate target
 					hitTarget->Deactivate(m_fVelocity);
 
@@ -134,8 +148,15 @@ void AArrow::OnOverlapBeginHead(UPrimitiveComponent* OverlappedComp, AActor* Oth
 			// if arrow hits target manager
 			else if (OtherActor->GetClass() == AArcheryTargetManager::StaticClass()) {/* ignore */}
 
+			// if arrow hits bow
+			else if (OtherActor->GetClass() == ABow::StaticClass()) {/* ignore */ }
+
+			// if arrow hits controller
+			else if (OtherActor->GetClass() == AArcheryController::StaticClass()) {/* ignore */ }
+
 			// otherwise, stop the arrow
 			else {
+				m_pParticleSystem->Deactivate();
 				m_bTipOverlap = true;
 			}
 
