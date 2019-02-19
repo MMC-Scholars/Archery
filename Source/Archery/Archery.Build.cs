@@ -14,6 +14,7 @@ public class Archery : ModuleRules
         //These allow us to reference files in the VRBase directory from anywhere in the project - you may need to add
         //another path for your machine.
         PublicIncludePaths.Add("C:/Users/Public/Public Projects/Archery/Source/Archery/VRBase");
+        PublicIncludePaths.Add("D:/Github/Archery/Source/Archery/VRBase");
         PublicIncludePaths.Add("C:/Users/Public/Documents/Public Projects/Archery/Source/Archery/VRBase");
 
         // To include OnlineSubsystemSteam, add it to the plugins section in your uproject file with the Enabled attribute set to true

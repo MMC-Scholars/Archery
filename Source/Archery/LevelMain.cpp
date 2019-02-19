@@ -4,11 +4,6 @@
 #include "System/NLogger.h"
 #include "Archery.h"
 
-#define MAX_NUM_TARGETS 20
-#define COUNTDOWN_TIME 11
-#define ENDING_SLOW_SOUND_TIME 2
-#define INITIAL_TIME 60
-
 ALevelMain::ALevelMain() {
 	m_pGameMusic = CreateDefaultSubobject<UAudioComponent>("Music");
 	m_pGameMusic->bAutoActivate = false;
@@ -17,8 +12,6 @@ ALevelMain::ALevelMain() {
 void ALevelMain::PostInit() {
 	// setup leaderboard
 	//TODO maybe write to a file at some point in the future?
-
-	//if (m_pLeaderboardsText) (m_pLeaderboardsText->GetTextRender())->SetText(FText::FromString(ANSI_TO_TCHAR("High Scores:\n")));
 
 	if (m_pTargetManager) ResetGame();
 

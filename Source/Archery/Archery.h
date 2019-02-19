@@ -49,3 +49,8 @@ public:
 };
 
 extern ArcheryGlobals g_archeryGlobals;
+
+#define MAX_NUM_TARGETS 20
+#define COUNTDOWN_TIME 11
+#define ENDING_SLOW_SOUND_TIME 2
+#define INITIAL_TIME 60
