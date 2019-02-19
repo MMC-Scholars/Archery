@@ -30,19 +30,27 @@ void AArcheryController::OnButtonsChanged() {
 					if (m_aOverlapActors[i]->GetClass() == AArcheryController::StaticClass()) nearHelpingActor = true;
 
 				}
-				
+
 				if (m_aOverlapActors.Num() == 0 || nearHelpingActor) {
 					
-					// max number of arrows only
-					if (m_aArrows.Num() >= MAX_NUM_ARROWS) {
-						AArrow* arrowDeletable = m_aArrows[m_aArrows.Num() - 1];
-						m_aArrows.Remove(arrowDeletable);
-						arrowDeletable->DestroyEntity();
-					}
-					
 					FVector loc = this->GetActorLocation();
-					AArrow* currentArrow = (AArrow*)GetWorld()->SpawnActor(AArrow::StaticClass(), &loc);
-					m_aArrows.Insert(currentArrow, 0);
+
+					// this will never be greater than MAX_NUM_ARROWS but
+					// it is good to include this check for consistency.
+					if (m_aArrows.Num() >= MAX_NUM_ARROWS) {
+						// reset index if necessary
+						if (m_iArrowIndex > m_aArrows.Num() - 1) m_iArrowIndex = 0;
+						
+						m_aArrows[m_iArrowIndex]->ResetArrow(loc);
+					}
+					// if m_aArrows.Num() < MAX_NUM_ARROWS
+					else {
+						AArrow* currentArrow = (AArrow*)GetWorld()->SpawnActor(AArrow::StaticClass(), &loc);
+						m_aArrows.Add(currentArrow);
+					}
+
+					// increment index
+					m_iArrowIndex++;
 
 				}
 				

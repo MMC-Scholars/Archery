@@ -12,7 +12,9 @@ class ARCHERY_API AArcheryController : public ABaseController {
 	
 public:
 
+	// arrow pool
 	TArray<AArrow*> m_aArrows;
+	int m_iArrowIndex = 0;
 
 	virtual void OnButtonsChanged() override;
 };

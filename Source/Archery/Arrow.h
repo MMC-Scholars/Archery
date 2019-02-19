@@ -27,8 +27,6 @@ public:
 	// Components
 	UBoxComponent* m_pHeadCollision;
 	USphereComponent* m_pTailCollision;
-	//TODO remove this UPROPERTY later
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Test")
 	UParticleSystemComponent* m_pParticleSystem;
 	
 	// Variables
@@ -38,6 +36,9 @@ public:
 
 	float m_fVelocity;
 	FVector m_vForward;
+
+	// Reset
+	void ResetArrow(FVector loc);
 
 	// Pickup attachment
 	void OnPickup_Implementation(ABaseController* controller) override;

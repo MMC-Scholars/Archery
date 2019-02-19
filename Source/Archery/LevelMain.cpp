@@ -18,9 +18,10 @@ void ALevelMain::PostInit() {
 	// setup leaderboard
 	//TODO maybe write to a file at some point in the future?
 
-	if (m_pLeaderboardsText) (m_pLeaderboardsText->GetTextRender())->SetText(FText::FromString(ANSI_TO_TCHAR("High Scores:\n")));
+	//if (m_pLeaderboardsText) (m_pLeaderboardsText->GetTextRender())->SetText(FText::FromString(ANSI_TO_TCHAR("High Scores:\n")));
 
 	if (m_pTargetManager) ResetGame();
+
 }
 
 void ALevelMain::ResetGame() {

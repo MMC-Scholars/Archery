@@ -50,23 +50,34 @@ AArrow::AArrow() {
 
 	static ConstructorHelpers::FObjectFinder<UMaterial> Material(PARTICLE_MAT);
 	m_pParticleSystem->SetMaterial(0, (UMaterialInterface*) Material.Object);
-
-	// States
-	m_bTipOverlap = false;
-	m_bIsNotched = false;
-	m_bIsFired = false;
-
-	//m_pHeadCollision->SetHiddenInGame(false, true); // debug only
-
 }
 
 void AArrow::PreInit() {
 	// Super
 	APickup::PreInit();
 
-	// turn off particles
+	// Reset arrow
+	ResetArrow(GetActorLocation());
+}
+
+void AArrow::ResetArrow(FVector loc) {
+	// deactivate particles
 	m_pParticleSystem->Deactivate();
 
+	// detatch
+	DetachFromActor(FDetachmentTransformRules::KeepWorldTransform);
+
+	// states
+	m_bTipOverlap = false;
+	m_bIsNotched = false;
+	m_bIsFired = false;
+
+	// pickup
+	m_pPickupMeshComponent->SetRenderCustomDepth(true);
+	m_pPickupMeshComponent->SetSimulatePhysics(true);
+
+	// set location
+	SetActorLocation(loc);
 }
 
 void AArrow::OnPickup_Implementation(ABaseController* controller) {

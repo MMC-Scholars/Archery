@@ -11,10 +11,11 @@ AArcheryTarget::AArcheryTarget() {
 	m_bDeletable = false;
 	m_fDeactivateTimeFinal = DEACTIVATE_TIME_SEC;
 
-	static ConstructorHelpers::FObjectFinder<UDestructibleMesh>destructMesh(DESTRUCTIBLE_MESH);
-
 	m_pTargetMesh = CreateDefaultSubobject<UDestructibleComponent>("Target");
+	static ConstructorHelpers::FObjectFinder<UDestructibleMesh>destructMesh(DESTRUCTIBLE_MESH);
 	m_pTargetMesh->SetDestructibleMesh(destructMesh.Object);
+
+	m_pTargetMesh->CastShadow = false;
 
 	RootComponent = m_pTargetMesh;
 	
