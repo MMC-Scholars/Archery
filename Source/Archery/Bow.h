@@ -33,6 +33,9 @@ public:
 	float m_fArrowVelocity;
 
 	SLineDrawParams m_sStringProps;
+
+	bool m_bHapticPulse;
+	float m_fHapticPulseTime;
 	
 	// ArrowNotch
 	void ArrowNotch(AArrow* arrow);

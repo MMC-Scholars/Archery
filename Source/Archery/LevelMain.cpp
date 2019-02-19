@@ -13,6 +13,7 @@ void ALevelMain::PostInit() {
 	// setup leaderboard
 	//TODO maybe write to a file at some point in the future?
 
+
 	if (m_pTargetManager) ResetGame();
 
 }
@@ -30,6 +31,7 @@ void ALevelMain::ResetGame() {
 	// score
 	g_archeryGlobals.m_iScore = 0;
 	// scoreboard
+	if (m_pResultsText) (m_pResultsText->GetTextRender())->SetText(FText::FromString(ANSI_TO_TCHAR(" ")));
 	SetScoreboard(g_archeryGlobals.m_iScore, m_fDisplayTime);
 	// countdown
 	(m_pTimerText->GetTextRender())->SetText( FText::FromString(ANSI_TO_TCHAR(" ")) );
@@ -41,6 +43,9 @@ void ALevelMain::StartGame() {
 	
 	// play music
 	if (m_pGameMusicCue) m_pGameMusic->Play();
+
+	// clear results
+	(m_pResultsText->GetTextRender())->SetText(FText::FromString(ANSI_TO_TCHAR(" ")));
 
 	m_bIsTiming = true;
 }
@@ -86,14 +91,16 @@ void ALevelMain::DefaultThink() {
 			// if time is up
 			if (m_fDisplayTime <= 0) {
 			
-				// leaderboards
-				if (m_pLeaderboardsText) {
-					FString old = m_pLeaderboardsText->GetTextRender()->Text.ToString();
+				// results
+				if (m_pResultsText) {
+					FString old = m_pResultsText->GetTextRender()->Text.ToString();
 					char str[100];
 					sprintf_s(str, "\nYou earned %u points in %d seconds!", g_archeryGlobals.m_iScore, m_iMaxTime);
 					old.Append(str);
 
-					m_pLeaderboardsText->GetTextRender()->SetText(FText::FromString(old));
+					//TODO if score made it into leaderboards, append string saying new record
+					
+					m_pResultsText->GetTextRender()->SetText(FText::FromString(old));
 				}
 
 				// reset game

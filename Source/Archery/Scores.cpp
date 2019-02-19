@@ -8,15 +8,30 @@ void ArcheryScores::writeScores(TArray<int> arr) {
 
 	fopen_s(&scoreFile, SCORE_FILE, "wb");
 
-	//TODO THIS
+	ArcheryScores::numScores = arr.Num();
 
+	for (int i = 0; i < arr.Num(); i++) {
+//		fprintf_s(scoreFile, "%c", (char*) arr[i]);
+	}
+
+	fclose(scoreFile);
 }
 
 TArray<int> ArcheryScores::readScores() {
 	FILE *scoreFile;
-	
-	fopen_s(&scoreFile, SCORE_FILE, "rb");
+	char buffer[512];
+	TArray<int> arr;
 
-	//TODO THIS
+	fopen_s(&scoreFile, SCORE_FILE, "rb");
 	
+	ArcheryScores::numScores = ArcheryScores::numScores ? ArcheryScores::numScores : 0;
+
+	for (int i = 0; i < ArcheryScores::numScores * sizeof(int); i++) {
+		fscanf(scoreFile, "%c", buffer + i);
+		arr.Add( *(buffer + i) );
+	}
+	
+	fclose(scoreFile);
+
+	return arr;
 }

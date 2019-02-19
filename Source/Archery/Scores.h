@@ -4,6 +4,8 @@
 
 namespace ArcheryScores {
 
+	int numScores;
+
 	void writeScores(TArray<int> arr);
 
 	TArray<int> readScores();

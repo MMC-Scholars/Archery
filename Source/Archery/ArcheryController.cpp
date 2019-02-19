@@ -32,7 +32,7 @@ void AArcheryController::OnButtonsChanged() {
 				}
 
 				if (m_aOverlapActors.Num() == 0 || nearHelpingActor) {
-					
+
 					FVector loc = this->GetActorLocation();
 
 					// this will never be greater than MAX_NUM_ARROWS but

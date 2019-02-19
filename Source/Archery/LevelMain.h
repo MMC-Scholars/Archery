@@ -44,6 +44,10 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Leaderboards Text")
 	ATextRenderActor* m_pLeaderboardsText;
 
+	// display final score and time
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Results Text")
+	ATextRenderActor* m_pResultsText;
+
 	// game music
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Button)
 	USoundCue* m_pGameMusicCue;

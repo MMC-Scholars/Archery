@@ -107,24 +107,27 @@ void ABow::ArrowNotch(AArrow* arrow) {
 	m_pNotchedArrow = arrow;
 	m_pNotchedArrow->m_bIsNotched = true;
 	m_fArrowVelocity = 0;
+	m_bHapticPulse = false;
 }
 
 void ABow::DefaultThink() {
+	// possible fix for freeze bug, still unsure
 
+	/*
 	// detatch all actors that are not the bow
 	for (AActor* actor : m_aParentActors) {
 		if (actor == g_archeryGlobals.getBowHand()) {
 			AArcheryController* bowHand = Cast<AArcheryController>(actor);
 			for (int i = 0; i < bowHand->m_aAttachActors.Num(); i++) {
-				ABow* bow = Cast<ABow>(bowHand->m_aAttachActors[i]);
-				if (!bow) {
+				if ( !Cast<ABow>(bowHand->m_aAttachActors[i]) ) {
 					bowHand->m_aAttachActors[i]->DetachFromActor(FDetachmentTransformRules::KeepWorldTransform);
 					bowHand->m_aAttachActors[i]->m_pPickupMeshComponent->SetSimulatePhysics(true);
 				}
 			}
 		}
 	}
-	
+	*/
+
 	// if holding bow and arrow
 	if (g_archeryGlobals.getBowHand()) {
 		if (m_pNotchedArrow) {
@@ -163,11 +166,16 @@ void ABow::DefaultThink() {
 				m_fArrowVelocity = 0.1 * pow(distance, 2);
 				
 				// haptics
-				float frq = FMath::Clamp(m_fArrowVelocity/1000 + (m_fArrowVelocity-prevArrowVelocity)/1000, 0.0f, 1.0f);
+				float frq = FMath::Clamp(m_fArrowVelocity/1000 + (m_fArrowVelocity-prevArrowVelocity)/1000, 0.01f, 0.4f);
 				float amp = FMath::Clamp(FMath::Abs((m_fArrowVelocity - prevArrowVelocity) / 5), 0.0f, 1.0f);
 				
 				GetWorld()->GetFirstPlayerController()->SetHapticsByValue(frq, amp, g_archeryGlobals.getArrowHand()->m_eWhichHand);
+				
+				// minimized bow hand haptics
+				GetWorld()->GetFirstPlayerController()->SetHapticsByValue(frq, amp/2, g_archeryGlobals.getBowHand()->m_eWhichHand);
 
+				// haptic time
+				m_fHapticPulseTime = g_pGlobals->curtime;
 			}
 			else { // arrow has just been fired
 
@@ -175,9 +183,9 @@ void ABow::DefaultThink() {
 				m_pNotchedArrow->FireArrow(m_fArrowVelocity, forward);
 				m_pNotchedArrow = nullptr;
 
+				GetWorld()->GetFirstPlayerController()->SetHapticsByValue(0, 0, g_archeryGlobals.getBowHand()->m_eWhichHand);
 
-				// reset haptics
-				GetWorld()->GetFirstPlayerController()->SetHapticsByValue(0, 0, g_archeryGlobals.getArrowHand()->m_eWhichHand);
+				m_bHapticPulse = true;
 			}
 			
 		}
@@ -200,5 +208,18 @@ void ABow::DefaultThink() {
 			attached.Pop()->DetachFromActor(FDetachmentTransformRules::KeepWorldTransform);
 		}
 		
+	}
+
+	if (m_bHapticPulse) {
+		const float PULSE_TIME = 0.06f;
+
+		GetWorld()->GetFirstPlayerController()->SetHapticsByValue(0.4, 1, g_archeryGlobals.getArrowHand()->m_eWhichHand);
+		
+		if ( (g_pGlobals->curtime - m_fHapticPulseTime) > PULSE_TIME ) {
+			// reset haptics
+			GetWorld()->GetFirstPlayerController()->SetHapticsByValue(0, 0, g_archeryGlobals.getArrowHand()->m_eWhichHand);
+			
+			m_bHapticPulse = false;
+		}
 	}
 }
