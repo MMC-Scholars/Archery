@@ -50,7 +50,21 @@ public:
 
 extern ArcheryGlobals g_archeryGlobals;
 
+// the maximum number of targets activated at once
 #define MAX_NUM_TARGETS 20
+
+// the countdown time (seconds) before the game starts
 #define COUNTDOWN_TIME 11
+
+// the amount of time (seconds) to slow down stop the game.
 #define ENDING_SLOW_SOUND_TIME 2
-#define INITIAL_TIME 60
+
+// the time (seconds) of one game
+#define INITIAL_TIME 20
+	//TODO change this to 60
+
+// the max number of high scores displayed
+#define NUM_HIGH_SCORES 20
+
+// the path to the score binary file
+#define SCORE_FILE "../../scores.scores"

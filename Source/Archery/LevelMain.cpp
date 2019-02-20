@@ -2,6 +2,7 @@
 
 #include "LevelMain.h"
 #include "System/NLogger.h"
+#include "Scores.h"
 #include "Archery.h"
 
 ALevelMain::ALevelMain() {
@@ -10,12 +11,8 @@ ALevelMain::ALevelMain() {
 }
 
 void ALevelMain::PostInit() {
-	// setup leaderboard
-	//TODO maybe write to a file at some point in the future?
-
-
 	if (m_pTargetManager) ResetGame();
-
+	if (m_pResultsText) (m_pResultsText->GetTextRender())->SetText(FText::FromString(ANSI_TO_TCHAR(" ")));
 }
 
 void ALevelMain::ResetGame() {
@@ -31,10 +28,21 @@ void ALevelMain::ResetGame() {
 	// score
 	g_archeryGlobals.m_iScore = 0;
 	// scoreboard
-	if (m_pResultsText) (m_pResultsText->GetTextRender())->SetText(FText::FromString(ANSI_TO_TCHAR(" ")));
 	SetScoreboard(g_archeryGlobals.m_iScore, m_fDisplayTime);
 	// countdown
 	(m_pTimerText->GetTextRender())->SetText( FText::FromString(ANSI_TO_TCHAR(" ")) );
+
+	// leaderboards
+	char str[5];
+	FString highScoreStr = FString("");
+	TArray<int> highScores = ArcheryScores::readScores(NUM_HIGH_SCORES);
+	for (int i = 0; i < highScores.Num(); i++) {
+		sprintf_s(str, "%d\n", highScores[i]);
+		highScoreStr.Append(str);
+	}
+
+	m_pLeaderboardsText->GetTextRender()->SetText(FText::FromString(highScoreStr));
+	
 }
 
 void ALevelMain::StartGame() {
@@ -90,17 +98,20 @@ void ALevelMain::DefaultThink() {
 
 			// if time is up
 			if (m_fDisplayTime <= 0) {
-			
+
 				// results
 				if (m_pResultsText) {
-					FString old = m_pResultsText->GetTextRender()->Text.ToString();
+					//FString old = m_pResultsText->GetTextRender()->Text.ToString();
 					char str[100];
 					sprintf_s(str, "\nYou earned %u points in %d seconds!", g_archeryGlobals.m_iScore, m_iMaxTime);
-					old.Append(str);
+					//old.Append(str);
+					FString result = FString(str);
+
 
 					//TODO if score made it into leaderboards, append string saying new record
-					
-					m_pResultsText->GetTextRender()->SetText(FText::FromString(old));
+
+					//m_pResultsText->GetTextRender()->SetText(FText::FromString(old));
+					m_pResultsText->GetTextRender()->SetText(FText::FromString(result));
 				}
 
 				// reset game

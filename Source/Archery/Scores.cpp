@@ -1,37 +1,35 @@
 
 #include "Scores.h"
-
-#define SCORE_FILE "./scores.scores"
+#include "Archery.h"
 
 void ArcheryScores::writeScores(TArray<int> arr) {
 	FILE *scoreFile;
 
 	fopen_s(&scoreFile, SCORE_FILE, "wb");
 
-	ArcheryScores::numScores = arr.Num();
-
-	for (int i = 0; i < arr.Num(); i++) {
-//		fprintf_s(scoreFile, "%c", (char*) arr[i]);
+	for (int i = 0; i < arr.Num() * sizeof(int); i++) {
+		fprintf_s(scoreFile, "%c", *(((char*) &arr[0]) + i));
 	}
 
 	fclose(scoreFile);
 }
 
-TArray<int> ArcheryScores::readScores() {
+TArray<int> ArcheryScores::readScores(int numScores) {
 	FILE *scoreFile;
 	char buffer[512];
 	TArray<int> arr;
 
 	fopen_s(&scoreFile, SCORE_FILE, "rb");
-	
-	ArcheryScores::numScores = ArcheryScores::numScores ? ArcheryScores::numScores : 0;
 
-	for (int i = 0; i < ArcheryScores::numScores * sizeof(int); i++) {
-		fscanf(scoreFile, "%c", buffer + i);
-		arr.Add( *(buffer + i) );
+	if (scoreFile) {
+		for (int i = 0; i < numScores * sizeof(int); i++) {
+			if (fscanf_s(scoreFile, "%c", buffer + i, 1) == EOF) break;
+
+			arr.Add(*(buffer + i));
+		}
+
+		fclose(scoreFile);
 	}
-	
-	fclose(scoreFile);
 
 	return arr;
 }

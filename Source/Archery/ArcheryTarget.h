@@ -8,6 +8,8 @@
 #include "Engine/StaticMesh.h"
 #include "Components/DestructibleComponent.h"
 #include "Engine/DestructibleMesh.h"
+#include "Components/AudioComponent.h"
+#include "Sound/SoundCue.h"
 #include "ArcheryTarget.generated.h"
 
 /**
@@ -25,11 +27,15 @@ public:
 	// Components
 	UDestructibleComponent* m_pTargetMesh;
 
+	USoundCue* m_pHitCue;
+	UAudioComponent* m_pHitCueComponent;
+
 	// Variables
 	bool m_bActive;
 	bool m_bDeactivation;
 	bool m_bMoving;
 	bool m_bDeletable; // signifies when the ArcheryTargetManager is able to destroy the actor
+	bool m_bBreakByPlayer;
 
 	float m_fDeactivateTime;
 	float m_fDeactivateTimeFinal;
