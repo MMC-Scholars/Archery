@@ -11,6 +11,8 @@ ALevelMain::ALevelMain() {
 }
 
 void ALevelMain::PostInit() {
+	if (m_pLeaderboardsText) m_pLeaderboardsText->GetTextRender()->SetText(FText::FromString(""));
+
 	if (m_pTargetManager) ResetGame();
 	if (m_pResultsText) (m_pResultsText->GetTextRender())->SetText(FText::FromString(ANSI_TO_TCHAR(" ")));
 }
@@ -32,12 +34,13 @@ void ALevelMain::ResetGame() {
 	// countdown
 	(m_pTimerText->GetTextRender())->SetText( FText::FromString(ANSI_TO_TCHAR(" ")) );
 
-	// leaderboards
-	char str[5];
+	// read leaderboards, write to TextRender
+	char str[256];
 	FString highScoreStr = FString("");
-	TArray<int> highScores = ArcheryScores::readScores(NUM_HIGH_SCORES);
-	for (int i = 0; i < highScores.Num(); i++) {
-		sprintf_s(str, "%d\n", highScores[i]);
+
+	m_aHighScores = ArcheryScores::readScores(NUM_HIGH_SCORES);
+	for (int i = m_aHighScores.Num()-1; i >= 0; i--) {
+		sprintf_s(str, "%d points\n", m_aHighScores[i]);
 		highScoreStr.Append(str);
 	}
 
@@ -69,7 +72,9 @@ void ALevelMain::DefaultThink() {
 	if (m_bIsTiming) {
 		if (m_bIsCountdown) {
 			// countdown
-			m_iDisplayCount = (int) ( COUNTDOWN_TIME - (g_pGlobals->curtime - m_fStartCount) );
+			float rawTime = COUNTDOWN_TIME - (g_pGlobals->curtime - m_fStartCount);
+			m_iDisplayCount = (int) rawTime;
+
 			// if time is up
 			if (m_iDisplayCount <= 0) {
 
@@ -99,20 +104,27 @@ void ALevelMain::DefaultThink() {
 			// if time is up
 			if (m_fDisplayTime <= 0) {
 
+				int score = g_archeryGlobals.m_iScore;
+				
 				// results
 				if (m_pResultsText) {
 					//FString old = m_pResultsText->GetTextRender()->Text.ToString();
 					char str[100];
-					sprintf_s(str, "\nYou earned %u points in %d seconds!", g_archeryGlobals.m_iScore, m_iMaxTime);
+					sprintf_s(str, "\nYou earned %u points in %d seconds!", score, m_iMaxTime);
 					//old.Append(str);
 					FString result = FString(str);
-
-
-					//TODO if score made it into leaderboards, append string saying new record
 
 					//m_pResultsText->GetTextRender()->SetText(FText::FromString(old));
 					m_pResultsText->GetTextRender()->SetText(FText::FromString(result));
 				}
+
+				//TODO if score made it into leaderboards, append string saying new record
+				m_aHighScores.Sort();
+				if (m_aHighScores.Num() < NUM_HIGH_SCORES) m_aHighScores.Add(score);
+				else if (score > m_aHighScores[0]) m_aHighScores[0] = score;
+				m_aHighScores.Sort();
+
+				ArcheryScores::writeScores(m_aHighScores);
 
 				// reset game
 				ResetGame();

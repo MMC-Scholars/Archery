@@ -91,6 +91,17 @@ void ABow::OnPickup_Implementation(ABaseController* controller) {
 void ABow::OnDrop_Implementation(ABaseController* controller) {
 	// clear bow and arrow hand assignments
 	if (m_aParentActors.Num() == 0) g_archeryGlobals.resetHands();
+
+	// simulate physics on all arrows
+	TArray<AActor*> attached;
+	GetAttachedActors(attached);
+	for (AActor* actor : attached) {
+		if (actor->GetClass() == AArrow::StaticClass()) {
+			AArrow* arrow = Cast<AArrow>(actor);
+			if (arrow) arrow->m_pPickupMeshComponent->SetSimulatePhysics(true);
+		}
+	}
+
 }
 
 void ABow::ArrowNotch(AArrow* arrow) {

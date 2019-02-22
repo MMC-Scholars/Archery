@@ -8,6 +8,8 @@
 #include "Components/BoxComponent.h"
 #include "Particles/ParticleSystemComponent.h"
 #include "Particles/ParticleSystem.h"
+#include "Sound/SoundCue.h"
+#include "Components/AudioComponent.h"
 #include "Arrow.generated.h"
 
 UCLASS()
@@ -28,7 +30,10 @@ public:
 	UBoxComponent* m_pHeadCollision;
 	USphereComponent* m_pTailCollision;
 	UParticleSystemComponent* m_pParticleSystem;
-	
+
+	UAudioComponent* m_pArrowSoundComponent;
+	USoundCue* m_pCueArrowShoot;
+
 	// Variables
 	bool m_bTipOverlap;
 	bool m_bIsNotched;

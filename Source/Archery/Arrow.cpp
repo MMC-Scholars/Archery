@@ -10,8 +10,12 @@
 #include "ArcheryTargetManager.h"
 
 #define ARROW_MESH L"StaticMesh'/Game/Meshes/Arrow.Arrow'"
+
 #define PARTICLE_SYSTEM L"ParticleSystem'/Game/Meshes/materials/p_arrow.p_arrow'"
 #define PARTICLE_MAT L"Material'/Game/Meshes/materials/m_arrow_particle.m_arrow_particle'"
+
+#define CUE_ARROW_SHOOT L"SoundCue'/Game/sounds/C_ArrowShoot.C_ArrowShoot'"
+
 const int HALF_ARROW_LENGTH = 37;
 
 AArrow::AArrow() {
@@ -50,6 +54,17 @@ AArrow::AArrow() {
 
 	static ConstructorHelpers::FObjectFinder<UMaterial> Material(PARTICLE_MAT);
 	m_pParticleSystem->SetMaterial(0, (UMaterialInterface*) Material.Object);
+
+	// Audio
+
+	m_pArrowSoundComponent = CreateDefaultSubobject<UAudioComponent>("Arrow SoundComponent");
+	m_pArrowSoundComponent->bAutoActivate = false;
+
+	// shoot
+	static ConstructorHelpers::FObjectFinder<USoundCue> CueArrowShoot(CUE_ARROW_SHOOT);
+	m_pCueArrowShoot = CueArrowShoot.Object;
+
+
 }
 
 void AArrow::PreInit() {
@@ -138,6 +153,9 @@ void AArrow::FireArrow(float velocity, FVector forward) {
 	m_vForward = forward;
 	m_pParticleSystem->Activate(true);
 	m_bIsFired = true;
+
+	m_pArrowSoundComponent->SetSound(m_pCueArrowShoot);
+	m_pArrowSoundComponent->Play();
 }
 
 

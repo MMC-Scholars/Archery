@@ -52,7 +52,7 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Button)
 	USoundCue* m_pGameMusicCue;
 	UAudioComponent* m_pGameMusic;
-
+	
 #if WITH_EDITOR
 	virtual void PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent) {
 
@@ -83,6 +83,9 @@ public:
 
 	bool m_bIsEnding; // resetting game
 	float m_fEndingStartTime;
+
+	// high score array
+	TArray<int> m_aHighScores;
 
 	// Functions
 	void ResetGame();
