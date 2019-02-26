@@ -4,6 +4,7 @@
 #include "System/NLogger.h"
 #include "Scores.h"
 #include "Archery.h"
+#include "Kismet/GameplayStatics.h"
 
 ALevelMain::ALevelMain() {
 	m_pGameMusic = CreateDefaultSubobject<UAudioComponent>("Music");
@@ -18,6 +19,8 @@ void ALevelMain::PostInit() {
 }
 
 void ALevelMain::ResetGame() {
+	// reset difficulty
+	m_iGameDiff = Easy;
 	// stop music
 	m_fEndingStartTime = g_pGlobals->curtime;
 	m_bIsEnding = true;
@@ -63,13 +66,28 @@ void ALevelMain::StartGame() {
 
 void ALevelMain::SetScoreboard(int score, float time) {
 	char str[100];
-	sprintf_s(str, "Score: %d\nTime: %4.2f", score, time);
+
+	char *diff;
+	switch (m_iGameDiff) {
+		case 6: { diff = "DMac"; break; }
+		case 5: { diff = "Super Impossible"; break; }
+		case 4: { diff = "Impossible"; break; }
+		case 3: { diff = "Extremely Hard"; break; }
+		case 2: { diff = "Hard"; break; }
+		case 1: { diff = "Medium"; break; }
+		default: { diff = "Easy"; break; }
+	}
+
+	sprintf_s(str, "Score: %d\nTime: %4.2f\nDifficulty: %s", score, time, diff);
 	(m_pScoreText->GetTextRender())->SetText( FText::FromString(ANSI_TO_TCHAR(str)) );
 }
 
 void ALevelMain::DefaultThink() {
 
 	if (m_bIsTiming) {
+
+		/* game is counting down . . . */
+
 		if (m_bIsCountdown) {
 			// countdown
 			float rawTime = COUNTDOWN_TIME - (g_pGlobals->curtime - m_fStartCount);
@@ -95,11 +113,32 @@ void ALevelMain::DefaultThink() {
 				(m_pTimerText->GetTextRender())->SetText( FText::FromString(ANSI_TO_TCHAR(str)) );
 			}
 		}
+		
+		/* game is currently running . . . */
+		
 		else {
 			// timer
 			m_fDisplayTime = m_iMaxTime - (g_pGlobals->curtime - m_fStartTime);
 			// scoreboard
 			SetScoreboard(g_archeryGlobals.m_iScore, m_fDisplayTime);
+			// restart song if needed
+			if (!m_pGameMusic->IsPlaying()) m_pGameMusic->Play();
+			
+			/* check score for difficulty change */
+			
+			if ( (int) g_archeryGlobals.m_iScore >= m_iMaxTime * SCORE_THRESHOLD) {
+				if (m_iGameDiff < NUM_DIFFICULTIES - 1) {
+					// increase time
+					m_iMaxTime += INITIAL_TIME / 2;
+
+					// increase difficulty
+					m_iGameDiff++;
+
+					// increase music pitch and speed
+					float pitch = ((float)m_iGameDiff / 100.0) + 1.0;
+					m_pGameMusic->SetPitchMultiplier(pitch);
+				}
+			}
 
 			// if time is up
 			if (m_fDisplayTime <= 0) {
@@ -108,17 +147,13 @@ void ALevelMain::DefaultThink() {
 				
 				// results
 				if (m_pResultsText) {
-					//FString old = m_pResultsText->GetTextRender()->Text.ToString();
 					char str[100];
 					sprintf_s(str, "\nYou earned %u points in %d seconds!", score, m_iMaxTime);
-					//old.Append(str);
 					FString result = FString(str);
 
-					//m_pResultsText->GetTextRender()->SetText(FText::FromString(old));
 					m_pResultsText->GetTextRender()->SetText(FText::FromString(result));
 				}
 
-				//TODO if score made it into leaderboards, append string saying new record
 				m_aHighScores.Sort();
 				if (m_aHighScores.Num() < NUM_HIGH_SCORES) m_aHighScores.Add(score);
 				else if (score > m_aHighScores[0]) m_aHighScores[0] = score;
@@ -134,6 +169,9 @@ void ALevelMain::DefaultThink() {
 	}
 
 	if (m_bIsEnding) {
+
+		/* game is ending . . . */
+
 		float timeElapsed = (g_pGlobals->curtime - m_fEndingStartTime);
 		if (timeElapsed >= ENDING_SLOW_SOUND_TIME) {
 			if (m_pGameMusicCue) {

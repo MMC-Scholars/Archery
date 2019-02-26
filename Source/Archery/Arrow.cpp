@@ -76,8 +76,9 @@ void AArrow::PreInit() {
 }
 
 void AArrow::ResetArrow(FVector loc) {
+	//TODO crash here
 	// deactivate particles
-	m_pParticleSystem->Deactivate();
+	if (m_pParticleSystem) m_pParticleSystem->Deactivate();
 
 	// detatch
 	DetachFromActor(FDetachmentTransformRules::KeepWorldTransform);

@@ -55,35 +55,31 @@ void ABow::PreInit() {
 
 void ABow::OnPickup_Implementation(ABaseController* controller) {
 
-	AActor* hand = (AActor*)controller; // manual C++ cast because Unreal's cast macro freaks out otherwise
+	// manual C++ cast because Unreal's cast macro freaks out otherwise
+	AActor* hand = (AActor*)controller;
+	
+	// we don't need to very that hand or g_archeryGlobals.getBowHand() 
+	//exist because they must exist at the times they are referenced
 
 	// override default pickup
 	if (m_aParentActors.Num() > 1) {
-		DetachFromActor(FDetachmentTransformRules::KeepWorldTransform);
 		m_aParentActors.Remove(controller);
-		AttachToActor(m_aParentActors[0], FAttachmentTransformRules::KeepWorldTransform);
-		hand = (AActor*)m_aParentActors[0];
-	}
-	
-	// override default attachment to align bow properly
 
-	if (hand) {
+		// override default attachment to align bow properly
+		DetachFromActor(FDetachmentTransformRules::KeepWorldTransform);		
+		AttachToActor(g_archeryGlobals.getBowHand(), FAttachmentTransformRules::SnapToTargetNotIncludingScale);
 
-		// if trying to hold bow, detatch all other actors
-		for (int i = 0; i < controller->m_aAttachActors.Num(); i++) {
-			controller->m_aAttachActors[i]->DetachFromActor(FDetachmentTransformRules::KeepWorldTransform);
-			controller->m_aAttachActors[i]->m_pPickupMeshComponent->SetSimulatePhysics(true);
-		}
+	} else {
 
+		// override default attachment to align bow properly
 		DetachFromActor(FDetachmentTransformRules::KeepWorldTransform);
 		AttachToActor(hand, FAttachmentTransformRules::SnapToTargetNotIncludingScale);
 
 		// bow hand and arrow hand
 
 		AArcheryController* bowHand = Cast<AArcheryController>(hand);
-		if (bowHand) {
-			g_archeryGlobals.setHands(bowHand);
-		}
+		if (bowHand) g_archeryGlobals.setHands(bowHand);
+
 	}
 
 }
@@ -91,17 +87,6 @@ void ABow::OnPickup_Implementation(ABaseController* controller) {
 void ABow::OnDrop_Implementation(ABaseController* controller) {
 	// clear bow and arrow hand assignments
 	if (m_aParentActors.Num() == 0) g_archeryGlobals.resetHands();
-
-	// simulate physics on all arrows
-	TArray<AActor*> attached;
-	GetAttachedActors(attached);
-	for (AActor* actor : attached) {
-		if (actor->GetClass() == AArrow::StaticClass()) {
-			AArrow* arrow = Cast<AArrow>(actor);
-			if (arrow) arrow->m_pPickupMeshComponent->SetSimulatePhysics(true);
-		}
-	}
-
 }
 
 void ABow::ArrowNotch(AArrow* arrow) {
@@ -122,22 +107,6 @@ void ABow::ArrowNotch(AArrow* arrow) {
 }
 
 void ABow::DefaultThink() {
-	// possible fix for freeze bug, still unsure
-
-	/*
-	// detatch all actors that are not the bow
-	for (AActor* actor : m_aParentActors) {
-		if (actor == g_archeryGlobals.getBowHand()) {
-			AArcheryController* bowHand = Cast<AArcheryController>(actor);
-			for (int i = 0; i < bowHand->m_aAttachActors.Num(); i++) {
-				if ( !Cast<ABow>(bowHand->m_aAttachActors[i]) ) {
-					bowHand->m_aAttachActors[i]->DetachFromActor(FDetachmentTransformRules::KeepWorldTransform);
-					bowHand->m_aAttachActors[i]->m_pPickupMeshComponent->SetSimulatePhysics(true);
-				}
-			}
-		}
-	}
-	*/
 
 	// if holding bow and arrow
 	if (g_archeryGlobals.getBowHand()) {
@@ -212,13 +181,9 @@ void ABow::DefaultThink() {
 		UTIL_DrawLine(m_pStringBot->GetComponentLocation(), m_pStringMid->GetComponentLocation(), &m_sStringProps);
 
 		g_archeryGlobals.resetHands();
-		
-		TArray<AActor*> attached;
-		GetAttachedActors(attached);
-		for (int i = 0; i < attached.Num(); i++) {
-			attached.Pop()->DetachFromActor(FDetachmentTransformRules::KeepWorldTransform);
-		}
-		
+	
+		if (m_pNotchedArrow) m_pNotchedArrow->ResetArrow(m_pNotchedArrow->GetActorLocation());
+	
 	}
 
 	if (m_bHapticPulse) {

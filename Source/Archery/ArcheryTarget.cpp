@@ -22,9 +22,20 @@ AArcheryTarget::AArcheryTarget() {
 	RootComponent = m_pTargetMesh;
 	
 	// collision
-	m_pTargetMesh->bGenerateOverlapEvents = true;
-	m_pTargetMesh->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Overlap);
-	m_pTargetMesh->OnComponentBeginOverlap.AddDynamic(this, &AArcheryTarget::OnTargetOverlap);
+
+	// disable destructible collision
+	m_pTargetMesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	m_pTargetMesh->bGenerateOverlapEvents = false;
+
+	// calculate collision bounds based on static mesh
+	m_pCollision = CreateDefaultSubobject<UBoxComponent>("Collision Box");
+	
+	FVector bounds = m_pTargetMesh->DestructibleMesh->SourceStaticMesh->GetBounds().GetBox().GetSize() / 2;
+	m_pCollision->SetBoxExtent(bounds); // rescaling
+
+	m_pCollision->OnComponentBeginOverlap.AddDynamic(this, &AArcheryTarget::OnTargetOverlap);
+
+	m_pCollision->SetupAttachment(RootComponent);
 
 	// hit sounds
 	static ConstructorHelpers::FObjectFinder<USoundCue> HitCue(HIT_CUE);
@@ -44,6 +55,7 @@ void AArcheryTarget::Activate() {
 	m_bDeactivation = false;
 	m_bBreakByPlayer = false;
 
+	m_pCollision->bGenerateOverlapEvents = true;
 	m_pTargetMesh->SetSimulatePhysics(false);
 
 	m_fDeactivateTime = 0;
@@ -52,7 +64,7 @@ void AArcheryTarget::Activate() {
 
 void AArcheryTarget::Deactivate(float force, float time) {
 	// turn off overlap
-	m_pTargetMesh->bGenerateOverlapEvents = false;
+	m_pCollision->bGenerateOverlapEvents = false;
 
 	// play sound
 	if (m_bBreakByPlayer) m_pHitCueComponent->Play();
@@ -62,7 +74,7 @@ void AArcheryTarget::Deactivate(float force, float time) {
 	m_bMoving = false;
 	// break target
 	m_pTargetMesh->SetSimulatePhysics(true);
-	m_pTargetMesh->ApplyDamage(force/10, m_pTargetMesh->GetComponentLocation(), m_pTargetMesh->GetComponentLocation(), force);
+	m_pTargetMesh->ApplyDamage(force, m_pTargetMesh->GetComponentLocation(), m_pTargetMesh->GetComponentLocation(), force);
 	// timer
 	m_fDeactivateTimeFinal = time;
 	m_fDeactivateTime = g_pGlobals->curtime;

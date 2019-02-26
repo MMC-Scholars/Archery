@@ -8,6 +8,7 @@
 #include "Engine/StaticMesh.h"
 #include "Components/DestructibleComponent.h"
 #include "Engine/DestructibleMesh.h"
+#include "Components/BoxComponent.h"
 #include "Components/AudioComponent.h"
 #include "Sound/SoundCue.h"
 #include "ArcheryTarget.generated.h"
@@ -26,6 +27,8 @@ public:
 
 	// Components
 	UDestructibleComponent* m_pTargetMesh;
+
+	UBoxComponent* m_pCollision;
 
 	USoundCue* m_pHitCue;
 	UAudioComponent* m_pHitCueComponent;

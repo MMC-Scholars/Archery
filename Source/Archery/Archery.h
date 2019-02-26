@@ -15,7 +15,8 @@ public:
 
 	// Variables
 
-	unsigned int m_iScore;
+	unsigned int m_iScore; // score
+	TArray<AArrow*> m_aArrows; // arrow pool
 
 	// Functions
 
@@ -50,6 +51,10 @@ public:
 
 extern ArcheryGlobals g_archeryGlobals;
 
+
+// the maximum number of arrows in game at once
+#define MAX_NUM_ARROWS 15
+
 // the maximum number of targets activated at once
 #define MAX_NUM_TARGETS 20
 
@@ -60,8 +65,11 @@ extern ArcheryGlobals g_archeryGlobals;
 #define ENDING_SLOW_SOUND_TIME 2
 
 // the time (seconds) of one game
-#define INITIAL_TIME 20
-	//TODO change this to 60
+#define INITIAL_TIME 60
+
+// the proportion of score to time that must be reached before increasing difficulty
+#define SCORE_THRESHOLD 0.1
+//TODO change this to 0.75
 
 // the max number of high scores displayed
 #define NUM_HIGH_SCORES 20

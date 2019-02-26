@@ -5,8 +5,6 @@
 #include "Archery.h"
 #include "Bow.h"
 
-#define MAX_NUM_ARROWS 15
-
 void AArcheryController::OnButtonsChanged() {
 
 	// if holding the bow in the other hand
@@ -37,16 +35,16 @@ void AArcheryController::OnButtonsChanged() {
 
 					// this will never be greater than MAX_NUM_ARROWS but
 					// it is good to include this check for consistency.
-					if (m_aArrows.Num() >= MAX_NUM_ARROWS) {
+					if (g_archeryGlobals.m_aArrows.Num() >= MAX_NUM_ARROWS) {
 						// reset index if necessary
-						if (m_iArrowIndex > m_aArrows.Num() - 1) m_iArrowIndex = 0;
+						if (m_iArrowIndex > g_archeryGlobals.m_aArrows.Num() - 1) m_iArrowIndex = 0;
 						
-						m_aArrows[m_iArrowIndex]->ResetArrow(loc);
+						g_archeryGlobals.m_aArrows[m_iArrowIndex]->ResetArrow(loc);
 					}
 					// if m_aArrows.Num() < MAX_NUM_ARROWS
 					else {
 						AArrow* currentArrow = (AArrow*)GetWorld()->SpawnActor(AArrow::StaticClass(), &loc);
-						m_aArrows.Add(currentArrow);
+						g_archeryGlobals.m_aArrows.Add(currentArrow);
 					}
 
 					// increment index
