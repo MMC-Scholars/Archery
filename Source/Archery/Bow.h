@@ -29,14 +29,23 @@ public:
 	USceneComponent* m_pStringMid;
 
 	// Variables
+
+	// reset
+	FVector m_initLoc;
+	FRotator m_initRot;
+	// arrow
 	AArrow* m_pNotchedArrow;
+	//TODO handle
+	//EHANDLE m_hNotchedArrow;
 	float m_fArrowVelocity;
-
+	// string
 	SLineDrawParams m_sStringProps;
-
+	// haptic
 	bool m_bHapticPulse;
 	float m_fHapticPulseTime;
 	
+	// Functions
+
 	// ArrowNotch
 	void ArrowNotch(AArrow* arrow);
 

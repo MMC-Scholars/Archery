@@ -31,13 +31,13 @@ public:
 	USphereComponent* m_pTailCollision;
 	UParticleSystemComponent* m_pParticleSystem;
 
-	UAudioComponent* m_pArrowSoundComponent;
 	USoundCue* m_pCueArrowShoot;
 
 	// Variables
 	bool m_bTipOverlap;
 	bool m_bIsNotched;
 	bool m_bIsFired;
+	bool m_bParticlesActive;
 
 	float m_fVelocity;
 	FVector m_vForward;

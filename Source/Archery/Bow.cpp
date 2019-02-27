@@ -39,9 +39,12 @@ ABow::ABow() {
 }
 
 void ABow::PreInit() {
-
 	// reset hands before the game starts
 	g_archeryGlobals.resetHands();
+
+	// set reset properties
+	m_initLoc = GetActorLocation();
+	m_initRot = GetActorRotation();
 
 	// reset attached arrow
 	m_pNotchedArrow = nullptr;
@@ -55,6 +58,8 @@ void ABow::PreInit() {
 
 void ABow::OnPickup_Implementation(ABaseController* controller) {
 
+	Msg("pickup");
+
 	// manual C++ cast because Unreal's cast macro freaks out otherwise
 	AActor* hand = (AActor*)controller;
 	
@@ -65,12 +70,15 @@ void ABow::OnPickup_Implementation(ABaseController* controller) {
 	if (m_aParentActors.Num() > 1) {
 		m_aParentActors.Remove(controller);
 
+		Msg("Num > 1");
+
 		// override default attachment to align bow properly
 		DetachFromActor(FDetachmentTransformRules::KeepWorldTransform);		
 		AttachToActor(g_archeryGlobals.getBowHand(), FAttachmentTransformRules::SnapToTargetNotIncludingScale);
 
 	} else {
 
+		Msg("not num > 1");
 		// override default attachment to align bow properly
 		DetachFromActor(FDetachmentTransformRules::KeepWorldTransform);
 		AttachToActor(hand, FAttachmentTransformRules::SnapToTargetNotIncludingScale);
@@ -87,11 +95,16 @@ void ABow::OnPickup_Implementation(ABaseController* controller) {
 void ABow::OnDrop_Implementation(ABaseController* controller) {
 	// clear bow and arrow hand assignments
 	if (m_aParentActors.Num() == 0) g_archeryGlobals.resetHands();
+	Msg("drop like it's hot");
+
 }
 
 void ABow::ArrowNotch(AArrow* arrow) {
+	Msg("notch arrow");
+
 	// if an arrow is somehow already notched, detatch and simulate physics
 	if (m_pNotchedArrow) {
+		Msg("if notched arrow");
 		m_pNotchedArrow->DetachFromActor(FDetachmentTransformRules::KeepWorldTransform);
 		m_pNotchedArrow->m_bIsNotched = false;
 		m_pNotchedArrow->m_pPickupMeshComponent->SetSimulatePhysics(true);
@@ -101,6 +114,8 @@ void ABow::ArrowNotch(AArrow* arrow) {
 	arrow->AttachToActor(this, FAttachmentTransformRules::SnapToTargetNotIncludingScale);
 	
 	m_pNotchedArrow = arrow;
+	//TODO handle
+	//m_hNotchedArrow = EHANDLE(m_pNotchedArrow);
 	m_pNotchedArrow->m_bIsNotched = true;
 	m_fArrowVelocity = 0;
 	m_bHapticPulse = false;
@@ -110,8 +125,10 @@ void ABow::DefaultThink() {
 
 	// if holding bow and arrow
 	if (g_archeryGlobals.getBowHand()) {
+		Msg("bow hand");
 		if (m_pNotchedArrow) {
-			
+			Msg("notched arrow think");
+
 			// get the bow hand origin
 			FVector e = g_archeryGlobals.getBowHand()->GetActorLocation();
 			// get arrow hand origin
@@ -123,7 +140,7 @@ void ABow::DefaultThink() {
 			forward.Normalize(1.0f);
 
 			if (m_pNotchedArrow->m_bIsNotched) { // arrow is notched
-
+				Msg("notched arrow is notched ma boi"); //todo maybe related?
 				// verify physics is not simulating (bug fix)
 				m_pNotchedArrow->m_pPickupMeshComponent->SetSimulatePhysics(false);
 
@@ -158,7 +175,7 @@ void ABow::DefaultThink() {
 				m_fHapticPulseTime = g_pGlobals->curtime;
 			}
 			else { // arrow has just been fired
-
+				Msg("sorry just fired not sorry");
 				m_pNotchedArrow->m_pPickupMeshComponent->SetSimulatePhysics(false);
 				m_pNotchedArrow->FireArrow(m_fArrowVelocity, forward);
 				m_pNotchedArrow = nullptr;
@@ -173,6 +190,7 @@ void ABow::DefaultThink() {
 			// render string
 			UTIL_DrawLine(m_pStringTop->GetComponentLocation(), m_pStringMid->GetComponentLocation(), &m_sStringProps);
 			UTIL_DrawLine(m_pStringBot->GetComponentLocation(), m_pStringMid->GetComponentLocation(), &m_sStringProps);
+			Msg("there is no spoon");
 		}
 	}
 	else { // if bow is dropped
@@ -181,20 +199,20 @@ void ABow::DefaultThink() {
 		UTIL_DrawLine(m_pStringBot->GetComponentLocation(), m_pStringMid->GetComponentLocation(), &m_sStringProps);
 
 		g_archeryGlobals.resetHands();
-	
+		Msg("bow drop soup");
 		if (m_pNotchedArrow) m_pNotchedArrow->ResetArrow(m_pNotchedArrow->GetActorLocation());
 	
 	}
 
 	if (m_bHapticPulse) {
 		const float PULSE_TIME = 0.06f;
-
+		Msg("heart pulse");
 		GetWorld()->GetFirstPlayerController()->SetHapticsByValue(0.4, 1, g_archeryGlobals.getArrowHand()->m_eWhichHand);
 		
 		if ( (g_pGlobals->curtime - m_fHapticPulseTime) > PULSE_TIME ) {
 			// reset haptics
 			GetWorld()->GetFirstPlayerController()->SetHapticsByValue(0, 0, g_archeryGlobals.getArrowHand()->m_eWhichHand);
-			
+			Msg("reset his pulse");
 			m_bHapticPulse = false;
 		}
 	}
