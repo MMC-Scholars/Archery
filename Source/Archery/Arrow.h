@@ -34,20 +34,24 @@ public:
 	USoundCue* m_pCueArrowShoot;
 
 	// Variables
-	bool m_bTipOverlap;
-	bool m_bIsNotched;
-	bool m_bIsFired;
-	bool m_bParticlesActive;
 
+	// fired arrow
 	float m_fVelocity;
 	FVector m_vForward;
+	// states
+	bool m_bIsNotched;
+	bool m_bIsFired;
 
+	// Functions
+	
 	// Reset
 	void ResetArrow(FVector loc);
 
-	// Pickup attachment
-	void OnPickup_Implementation(ABaseController* controller) override;
-	// Drop fire
+	// Pickup
+	// Note: this function is OVERRIDEN from the main Pickup
+	// function, NOT an implementation of OnPickup.
+	virtual void Pickup(ABaseController* controller) override;
+	// OnDrop Implementation
 	void OnDrop_Implementation(ABaseController* controller) override;
 
 	// Fire arrrow

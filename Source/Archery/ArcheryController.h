@@ -12,7 +12,9 @@ class ARCHERY_API AArcheryController : public ABaseController {
 	
 public:
 
+	// keeps track of which arrow is being used
 	int m_iArrowIndex = 0;
 
+	// override
 	virtual void OnButtonsChanged() override;
 };

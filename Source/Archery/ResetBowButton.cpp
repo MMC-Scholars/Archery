@@ -4,7 +4,8 @@
 
 
 void AResetBowButton::OnPressed_Implementation(ABaseController* pController) {
-
+	m_pBow->ResetBow();
+	/*
 	// detatch and remove bow
 	m_pBow->DetachFromActor(FDetachmentTransformRules::KeepWorldTransform);
 
@@ -36,7 +37,7 @@ void AResetBowButton::OnPressed_Implementation(ABaseController* pController) {
 	// turn off physics
 	m_pBow->m_pPickupMeshComponent->SetSimulatePhysics(false);
 	m_pBow->m_pPickupMeshComponent->SetRenderCustomDepth(true);
-
+	*/
 }
 
 

@@ -3,6 +3,7 @@
 
 #include "CoreMinimal.h"
 #include "ArcheryController.h"
+#include "Bow.h"
 #include "System/NLogger.h"
 
 class ArcheryGlobals {
@@ -10,15 +11,23 @@ class ArcheryGlobals {
 private:
 	AArcheryController* m_BowHand;
 	AArcheryController* m_ArrowHand;
+	// bow being held
+	ABow* m_pBow;
 
 public:
 
 	// Variables
 
-	unsigned int m_iScore; // score
-	TArray<AArrow*> m_aArrows; // arrow pool
+	// score
+	unsigned int m_iScore;
+	// arrow pool
+	TArray<AArrow*> m_aArrows;
 
 	// Functions
+
+	ABow* getBow() {
+		return m_pBow;
+	}
 
 	AArcheryController* getBowHand() {
 		return m_BowHand;
@@ -28,7 +37,9 @@ public:
 		return m_ArrowHand;
 	}
 
-	void setHands(AArcheryController* bowHand) {
+	void setHands(AArcheryController* bowHand, ABow* bow) {
+		m_pBow = bow;
+
 		m_BowHand = bowHand;
 
 		AArcheryController* leftController = static_cast<AArcheryController*>(g_pLeftController);
@@ -46,6 +57,7 @@ public:
 	void resetHands() {
 		m_BowHand = nullptr;
 		m_ArrowHand = nullptr;
+		m_pBow = nullptr;
 	}
 };
 

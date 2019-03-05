@@ -31,26 +31,32 @@ public:
 	// Variables
 
 	// reset
-	FVector m_initLoc;
-	FRotator m_initRot;
-	// arrow
-	AArrow* m_pNotchedArrow;
-	//TODO handle
-	//EHANDLE m_hNotchedArrow;
-	float m_fArrowVelocity;
+	FVector m_vInitLoc;
+	FRotator m_rInitRot;
 	// string
 	SLineDrawParams m_sStringProps;
+	FVector m_vInitStringLoc;
+	// arrow
+	AArrow* m_pNotchedArrow;
+	// arrow velocity
+	float m_fArrowVelocity;
 	// haptic
 	bool m_bHapticPulse;
 	float m_fHapticPulseTime;
-	
+
 	// Functions
 
-	// ArrowNotch
+	// Bow Reset
+	void ResetBow();
+	
+	// Arrow Notch
 	void ArrowNotch(AArrow* arrow);
 
 	// Pickup
-	virtual void OnPickup_Implementation(ABaseController* controller) override;
-	// Drop
+	// Note: this function is OVERRIDEN from the main Pickup
+	// function, NOT an implementation of OnPickup.
+	virtual void Pickup(ABaseController* controller) override;
+	
+	// OnDrop Implementation
 	virtual void OnDrop_Implementation(ABaseController* controller) override;
 };

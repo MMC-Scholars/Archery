@@ -2,6 +2,7 @@
 
 #include "Arrow.h"
 #include "System/NLogger.h"
+#include "ABasePawn/ABasePawn.h"
 #include "ArcheryController.h"
 #include "Archery.h"
 #include "ArrowPhysics.h"
@@ -60,156 +61,133 @@ AArrow::AArrow() {
 	static ConstructorHelpers::FObjectFinder<USoundCue> CueArrowShoot(CUE_ARROW_SHOOT);
 	m_pCueArrowShoot = CueArrowShoot.Object;
 
-
 }
 
 void AArrow::PreInit() {
-	// Super
-	APickup::PreInit();
-	Msg("pre arrow");
-	// Reset arrow
-	m_bParticlesActive = true;
+	// reset arrow
 	ResetArrow(GetActorLocation());
 }
 
 void AArrow::ResetArrow(FVector loc) {
-
-	Msg("reset ma arrow");
-	//TODO crash here
-
-	// detach
+	// detach from all actors
 	DetachFromActor(FDetachmentTransformRules::KeepWorldTransform);
-
-	// states
-	m_bTipOverlap = false;
-	m_bIsNotched = false;
-	m_bIsFired = false;
-
-	// pickup
+	// simulate physics
 	m_pPickupMeshComponent->SetRenderCustomDepth(true);
 	m_pPickupMeshComponent->SetSimulatePhysics(true);
-
-	// deactivate particles
-	if (m_pParticleSystem && m_bParticlesActive) m_pParticleSystem->Deactivate();
-	m_bParticlesActive = false;
-
-	// set location
+	// reset particle system
+	m_pParticleSystem->Deactivate();
+	// set actor location
 	SetActorLocation(loc);
+
+	// reset states
+	m_bIsNotched = false;
+	m_bIsFired = false;
 }
 
-void AArrow::OnPickup_Implementation(ABaseController* controller) {
-	if (m_bTipOverlap) m_bTipOverlap = false;
-	if (m_bIsNotched) m_bIsNotched = false;
-	if (m_bIsFired) m_bIsFired = false;
-	Msg("pickup more arrow ram");
-	m_pPickupMeshComponent->SetRenderCustomDepth(false);
+void AArrow::Pickup(ABaseController* controller) {
 	m_pPickupMeshComponent->SetSimulatePhysics(false);
-
-	// if user is holding bow, use custom pickup attachment
-	AActor* hand = controller->GetActor();
-
-	if (hand && controller == g_archeryGlobals.getArrowHand()) {
-		DetachFromActor(FDetachmentTransformRules::KeepWorldTransform);
-		Msg("yep it's a hand");
-		AArcheryController* archeryHand = Cast<AArcheryController>(hand);
-
-		if (archeryHand) {
-			Msg("no for real it's a hand");
-			m_pPickupMeshComponent->SetRenderCustomDepth(false);
-			m_pPickupMeshComponent->SetSimulatePhysics(false);
-			AttachToActor(hand, FAttachmentTransformRules::SnapToTargetNotIncludingScale);
-			// manually move arrow mesh forward to appear as though the user is holding the arrow tail 
-			m_pPickupMeshComponent->SetRelativeLocation(FVector(HALF_ARROW_LENGTH, 0, 0));
-		}
-		else {
-			Msg("just joshin ur taters");
-			m_pPickupMeshComponent->SetRenderCustomDepth(true);
-			m_pPickupMeshComponent->SetSimulatePhysics(true);
-		}
-	}
-}
-
-void AArrow::OnOverlapBeginTail(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult) {
-	Msg("overlapped tail");
-	ABow* bow = Cast<ABow>(OtherActor);
-	if (bow && !m_bIsNotched && !m_bIsFired) { // if current arrow is not already notched or fired
-		if (m_aParentActors.Contains(g_archeryGlobals.getArrowHand())) {
-			Msg("oh oh for for for loop");
-			bow->ArrowNotch(this);
 	
+	// add controller to list of parent actors
+	m_aParentActors.Add(controller);
+	
+	// if the bow is being held
+	if (g_archeryGlobals.getBowHand()) {
+		// if this is not the bow hand
+		if (controller != g_archeryGlobals.getBowHand()) {
+			// if no arrows are held
+			if (!g_archeryGlobals.getBow()->m_pNotchedArrow) {
+				AttachToActor(controller, FAttachmentTransformRules::SnapToTargetNotIncludingScale);
+				// manually move mesh forward to appear as though the user is holding the arrow tail 
+				m_pPickupMeshComponent->SetRelativeLocation(FVector(HALF_ARROW_LENGTH, 0, 0));
+			}
+			// if this is not the arrow is already held
+			else if (this != g_archeryGlobals.getBow()->m_pNotchedArrow)
+				m_pPickupMeshComponent->SetSimulatePhysics(true);
+
 		}
 	}
+	// if the bow is not being held
+	else AttachToActor(controller, FAttachmentTransformRules::KeepWorldTransform);
 
 }
 
 void AArrow::OnDrop_Implementation(ABaseController* controller) {
-	Msg("dropped it ya dingus");
+	// if the arrow is notched
 	if (m_bIsNotched) {
-		Msg("ain't notched til I say so");
-		m_bIsNotched = false;
 		m_pPickupMeshComponent->SetSimulatePhysics(false);
+
+		m_bIsNotched = false;
+
+	}
+}
+
+void AArrow::OnOverlapBeginTail(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult) {
+	if ((OtherActor != nullptr) && (OtherActor != this) && (OtherComp != nullptr)) {
+		// if overlapping with the bow
+		if (OtherActor->IsA(ABow::StaticClass())) {
+			// if arrow is held in arrow hand 
+			if (m_aParentActors.Contains(g_archeryGlobals.getArrowHand())) {
+				// notch arrow
+				Cast<ABow>(OtherActor)->ArrowNotch(this);
+			}
+		}
 	}
 }
 
 void AArrow::FireArrow(float velocity, FVector forward) {
+	// set fired arrow variables
 	m_fVelocity = velocity;
 	m_vForward = forward;
+	
+	// enable arrow particles
 	m_pParticleSystem->Activate();
-	m_bParticlesActive = true;
-	m_bIsFired = true;
-	Msg("fire ahead mate");
+
+	// play arrow shoot sound
 	UGameplayStatics::PlaySoundAtLocation(this, m_pCueArrowShoot, GetActorLocation());
 
-}
-
-
-void AArrow::OnOverlapBeginHead(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult) {
-	if ((OtherActor != nullptr) && (OtherActor != this) && (OtherComp != nullptr)) {
-		Msg("I'll overlap head");
-		if (m_bIsFired && OtherActor->GetClass() != this->GetClass()) {
-			Msg("ur fired now");
-			// if arrow hits target
-			if (OtherActor->GetClass() == AArcheryTarget::StaticClass()) {
-				AArcheryTarget* hitTarget = Cast<AArcheryTarget>(OtherActor);
-				// deactivate target
-				Msg("deactivation sequence shutdown imminent");
-				if (hitTarget) hitTarget->Deactivate(m_fVelocity);
-			}
-
-			// if arrow hits target manager
-			else if (OtherActor->GetClass() == AArcheryTargetManager::StaticClass()) {/* ignore */}
-
-			// if arrow hits bow
-			else if (OtherActor->GetClass() == ABow::StaticClass()) {/* ignore */ }
-
-			// if arrow hits controller
-			else if (OtherActor->GetClass() == AArcheryController::StaticClass()) {/* ignore */ }
-			
-			// otherwise, stop the arrow
-			else {
-				Msg("it's time to stop");
-				m_pParticleSystem->Deactivate();
-				m_bParticlesActive = false;
-				m_bTipOverlap = true;
-			}
-
-		}
-	}
+	// arrow is now fired
+	m_bIsFired = true;
 }
 
 void AArrow::DefaultThink() {
 
 	if (m_bIsFired) {
-		Msg("fired thinking");
+
 		FVector pos = GetActorLocation();
 		FRotator rot = GetActorRotation();
 
+		// calculate movement based on arrow physics
 		CalcNextMove(m_fVelocity, m_vForward, pos, rot);
 
 		SetActorLocation(pos);
 		SetActorRotation(rot);
 
-		if (m_bTipOverlap) m_bIsFired = false;
 	}
 
+}
+
+void AArrow::OnOverlapBeginHead(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult) {
+	if ((OtherActor != nullptr) && (OtherActor != this) && (OtherComp != nullptr)) {
+		if (m_bIsFired && !OtherActor->IsA(AArrow::StaticClass())) {
+
+			// if arrow hits target
+			if (OtherActor->IsA(AArcheryTarget::StaticClass())) {
+
+			}
+			// if arrow hits TargetManager, ignore
+			else if (OtherActor->IsA(AArcheryTargetManager::StaticClass())) {}
+			// if arrow hits bow, ignore
+			else if (OtherActor->IsA(ABow::StaticClass())) {}
+			// if arrow hits base pawn, ignore
+			else if (OtherActor->IsA(ABasePawn::StaticClass())) {}
+			// if arrow hits controllers, ignore
+			else if (OtherActor->IsA(AArcheryController::StaticClass())) {}
+			// if arrow hits anything else, stop
+			else {
+				m_pParticleSystem->Deactivate();
+				m_bIsFired = false;
+			}
+
+		}
+	}
 }
