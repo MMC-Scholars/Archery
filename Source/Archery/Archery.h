@@ -4,6 +4,7 @@
 #include "CoreMinimal.h"
 #include "ArcheryController.h"
 #include "Bow.h"
+#include "Arrow.h"
 #include "System/NLogger.h"
 
 class ArcheryGlobals {

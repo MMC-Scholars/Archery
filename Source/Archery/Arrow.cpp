@@ -108,7 +108,6 @@ void AArrow::Pickup(ABaseController* controller) {
 	}
 	// if the bow is not being held
 	else AttachToActor(controller, FAttachmentTransformRules::KeepWorldTransform);
-
 }
 
 void AArrow::OnDrop_Implementation(ABaseController* controller) {
@@ -139,6 +138,9 @@ void AArrow::FireArrow(float velocity, FVector forward) {
 	m_fVelocity = velocity;
 	m_vForward = forward;
 	
+	// detach from parent
+	DetachFromActor(FDetachmentTransformRules::KeepWorldTransform);
+
 	// enable arrow particles
 	m_pParticleSystem->Activate();
 
