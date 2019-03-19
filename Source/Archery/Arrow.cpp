@@ -22,12 +22,15 @@ const int HALF_ARROW_LENGTH = 37;
 
 AArrow::AArrow() {
 	m_pPickupMeshComponent->SetStaticMesh(FindMesh(ARROW_MESH));
+
+	// null RootComponent bug fix
+	this->SetRootComponent(m_pPickupMeshComponent);
 	
 	// Arrow Head Collision Box
 	
 	m_pHeadCollision = CreateDefaultSubobject<UBoxComponent>("Head Collision");
 	
-	m_pHeadCollision->SetupAttachment(m_pPickupMeshComponent);
+	m_pHeadCollision->SetupAttachment(RootComponent);
 	m_pHeadCollision->SetRelativeLocation(FVector(HALF_ARROW_LENGTH-10, 0, 0));
 	m_pHeadCollision->SetBoxExtent(FVector(10, 1, 1));
 	
@@ -39,7 +42,7 @@ AArrow::AArrow() {
 	m_pTailCollision = CreateDefaultSubobject<USphereComponent>("Tail Collision");
 	m_pTailCollision->InitSphereRadius(9.0f);
 
-	m_pTailCollision->SetupAttachment(m_pPickupMeshComponent);
+	m_pTailCollision->SetupAttachment(RootComponent);
 	m_pTailCollision->SetRelativeLocation(FVector(-1 * (HALF_ARROW_LENGTH - 5), 0, 0));
 
 	m_pTailCollision->bGenerateOverlapEvents = true;
@@ -52,7 +55,7 @@ AArrow::AArrow() {
 	m_pParticleSystem->SetTemplate(PS.Object);
 	m_pParticleSystem->SetRelativeLocation(FVector(-1 * (HALF_ARROW_LENGTH - 5), 0, 0));
 	
-	m_pParticleSystem->SetupAttachment(m_pPickupMeshComponent);
+	m_pParticleSystem->SetupAttachment(RootComponent);
 
 	static ConstructorHelpers::FObjectFinder<UMaterial> Material(PARTICLE_MAT);
 	m_pParticleSystem->SetMaterial(0, (UMaterialInterface*) Material.Object);
@@ -61,6 +64,10 @@ AArrow::AArrow() {
 	static ConstructorHelpers::FObjectFinder<USoundCue> CueArrowShoot(CUE_ARROW_SHOOT);
 	m_pCueArrowShoot = CueArrowShoot.Object;
 
+	// null RootComponent bug fix
+	if (GetParentActor() != NULL) {
+		GetParentActor()->SetRootComponent(m_pPickupMeshComponent);
+	}
 }
 
 void AArrow::PreInit() {

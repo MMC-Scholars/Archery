@@ -52,22 +52,6 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Button)
 	USoundCue* m_pGameMusicCue;
 	UAudioComponent* m_pGameMusic;
-	
-	// difficulty level
-	enum Difficulty {
-		Easy = 0,
-		Medium,
-		Hard,
-		ExtremelyHard,
-		Impossible,
-		SuperImpossible,
-		DMAC,
-
-		NUM_DIFFICULTIES
-	};
-
-	// current game difficulty
-	int m_iGameDiff;
 
 #if WITH_EDITOR
 	virtual void PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent) {

@@ -20,7 +20,7 @@ void ALevelMain::PostInit() {
 
 void ALevelMain::ResetGame() {
 	// reset difficulty
-	m_iGameDiff = Easy;
+	g_archeryGlobals.m_iDifficulty = g_archeryGlobals.Easy;
 	// stop music
 	m_fEndingStartTime = g_pGlobals->curtime;
 	m_bIsEnding = true;
@@ -41,7 +41,8 @@ void ALevelMain::ResetGame() {
 	char str[256];
 	FString highScoreStr = FString("");
 
-	m_aHighScores = ArcheryScores::readScores(NUM_HIGH_SCORES);
+	// reverse read scores to output the biggest scores first
+	m_aHighScores = ArcheryScores::readScores();
 	for (int i = m_aHighScores.Num()-1; i >= 0; i--) {
 		sprintf_s(str, "%d points\n", m_aHighScores[i]);
 		highScoreStr.Append(str);
@@ -68,7 +69,8 @@ void ALevelMain::SetScoreboard(int score, float time) {
 	char str[100];
 
 	char *diff;
-	switch (m_iGameDiff) {
+	//todo change this?
+	switch (g_archeryGlobals.m_iDifficulty) {
 		case 6: { diff = "DMac"; break; }
 		case 5: { diff = "Super Impossible"; break; }
 		case 4: { diff = "Impossible"; break; }
@@ -127,20 +129,21 @@ void ALevelMain::DefaultThink() {
 			/* check score for difficulty change */
 			
 			if ( (int) g_archeryGlobals.m_iScore >= m_iMaxTime * SCORE_THRESHOLD) {
-				if (m_iGameDiff < NUM_DIFFICULTIES - 1) {
+				if (g_archeryGlobals.m_iDifficulty < g_archeryGlobals.NUM_DIFFICULTIES - 1) {
 					// increase time
-					m_iMaxTime += INITIAL_TIME / 2;
+					m_iMaxTime += INITIAL_TIME * TIME_MULT_FACTOR;
 
 					// increase difficulty
-					m_iGameDiff++;
+					g_archeryGlobals.m_iDifficulty++;
 
 					// increase music pitch and speed
-					float pitch = ((float)m_iGameDiff / 100.0) + 1.0;
+					float pitch = ((float) g_archeryGlobals.m_iDifficulty / 100.0 / 2) + 1.0;
 					m_pGameMusic->SetPitchMultiplier(pitch);
 				}
 			}
 
-			// if time is up
+			/* if time is up */
+
 			if (m_fDisplayTime <= 0) {
 
 				int score = g_archeryGlobals.m_iScore;
@@ -154,10 +157,8 @@ void ALevelMain::DefaultThink() {
 					m_pResultsText->GetTextRender()->SetText(FText::FromString(result));
 				}
 
-				m_aHighScores.Sort();
 				if (m_aHighScores.Num() < NUM_HIGH_SCORES) m_aHighScores.Add(score);
 				else if (score > m_aHighScores[0]) m_aHighScores[0] = score;
-				m_aHighScores.Sort();
 
 				ArcheryScores::writeScores(m_aHighScores);
 

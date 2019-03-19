@@ -8,11 +8,14 @@ void ArcheryScores::writeScores(TArray<int> arr) {
 
 	fopen_s(&scoreFile, SCORE_FILE, "wb");
 
-	for (int i = 0; i < arr.Num(); i++) {
+	// ensure the correct number of scores are being written to score file
+	while (arr.Num() < NUM_HIGH_SCORES) arr.Add(0);
+
+	for (int i = 0; i < NUM_HIGH_SCORES; i++) {
 
 		for (int j = 0; j < 4; j++) {
 
-			fprintf_s(scoreFile, "%c", * ((char*)  (&arr[0] + i)) + j );
+			fprintf_s(scoreFile, "%c", *(((char*)&arr[i]) + j));
 
 		}
 
@@ -21,7 +24,7 @@ void ArcheryScores::writeScores(TArray<int> arr) {
 	fclose(scoreFile);
 }
 
-TArray<int> ArcheryScores::readScores(int numScores) {
+TArray<int> ArcheryScores::readScores() {
 	FILE *scoreFile;
 	char buffer[512];
 	TArray<int> arr;
@@ -29,11 +32,14 @@ TArray<int> ArcheryScores::readScores(int numScores) {
 	fopen_s(&scoreFile, SCORE_FILE, "rb");
 
 	if (scoreFile) {
-		for (int i = 0; i < numScores * sizeof(int); i++) {
+
+		// add raw data to buffer
+		for (int i = 0; i < NUM_HIGH_SCORES * sizeof(int); i++) {
 			if (fscanf_s(scoreFile, "%c", buffer + i, 1) == EOF) break;
 		}
 
-		for (int i = 0; i < numScores; i++) {
+		// read raw data to integers
+		for (int i = 0; i < NUM_HIGH_SCORES; i++) {
 			int* pScore = (int*)(buffer + sizeof(int) * i);
 			arr.Add(*pScore);
 		}
@@ -41,54 +47,8 @@ TArray<int> ArcheryScores::readScores(int numScores) {
 		fclose(scoreFile);
 	}
 
-	/*
-	Msg("This is the NEW array^");
-	TArray<int> t_arr;
-	t_arr.Add(0);
-	t_arr.Add(13);
-	t_arr.Add(1);
-	t_arr.Add(94);
-	t_arr.Add(47);
-	for (int i = 0; i < t_arr.Num(); i++) Msg("%d", t_arr[i]);
-	Msg("_END_OF_ARRAY_");
-
-	Msg("This is the 4th element of the array and should be 94. That element is %d", *(&t_arr[0]+3));
-
-	// WRITE
-
-	FILE *t_scoreFile;
-
-	fopen_s(&t_scoreFile, SCORE_FILE, "wb");
-
-	for (int i = 0; i < t_arr.Num(); i++)
-		for (int j = 0; j < 4; j++) fprintf_s(t_scoreFile, "%c", *((char*)(&t_arr[0] + i)) + j);
-
-	fclose(t_scoreFile);
-
-	// READ
-
-	char t_buffer[512];
-	TArray<int> t_arr_out;
-
-	fopen_s(&t_scoreFile, SCORE_FILE, "rb");
-
-	if (t_scoreFile) {
-		for (int i = 0; i < 5 * sizeof(int); i++) {
-			if (fscanf_s(t_scoreFile, "%c", t_buffer + i, 1) == EOF) break;
-		}
-
-		for (int i = 0; i < 5; i++) {
-			int* pScore = (int*)(t_buffer) + i;
-			t_arr_out.Add(*pScore);
-		}
-
-		fclose(t_scoreFile);
-	}
-
-	Msg("redone array^");
-	for (int i = 0; i < t_arr_out.Num(); i++) Msg("%d", t_arr_out[i]);
-	Msg("end of array");
-	*/
+	// sort scores from least to greatest
+	arr.Sort();
 
 	return arr;
 }

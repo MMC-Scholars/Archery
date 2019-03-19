@@ -34,6 +34,7 @@ AArcheryTarget::AArcheryTarget() {
 	m_pCollision->SetBoxExtent(bounds); // rescaling
 
 	m_pCollision->OnComponentBeginOverlap.AddDynamic(this, &AArcheryTarget::OnTargetOverlap);
+	m_pTargetMesh->OnComponentFracture.AddUniqueDynamic(this, &AArcheryTarget::OnFracture);
 
 	m_pCollision->SetupAttachment(RootComponent);
 
@@ -51,9 +52,10 @@ void AArcheryTarget::PreInit() {
 
 void AArcheryTarget::Activate() {
 	m_bActive = true;
-	m_bMoving = false;
 	m_bDeactivation = false;
 	m_bBreakByPlayer = false;
+
+	m_Move = MovingComponent();
 
 	m_pCollision->bGenerateOverlapEvents = true;
 	m_pTargetMesh->SetSimulatePhysics(false);
@@ -71,7 +73,6 @@ void AArcheryTarget::Deactivate(float force, float time) {
 	m_bBreakByPlayer = false;
 
 	m_bActive = false;
-	m_bMoving = false;
 	// break target
 	m_pTargetMesh->SetSimulatePhysics(true);
 	m_pTargetMesh->ApplyDamage(force, m_pTargetMesh->GetComponentLocation(), m_pTargetMesh->GetComponentLocation(), force);
@@ -101,12 +102,20 @@ void AArcheryTarget::OnTargetOverlap(UPrimitiveComponent* OverlappedComp, AActor
 	}
 }
 
+void AArcheryTarget::OnFracture(const FVector& HitPoint, const FVector& HitDirection) {
+	// deactivate target if accidentally broken (bug fix)
+	Deactivate(0);
+}
+
 void AArcheryTarget::DefaultThink() {
 	// Active
 	if (m_bActive) {
+		if (g_archeryGlobals.m_iDifficulty >= g_archeryGlobals.Medium) {
+			//TODO move targets here using bMoving
+		}
 
-		//TODO move targets here using bMoving
 	}
+	
 	// Inactive
 	else {
 		// Deactivation

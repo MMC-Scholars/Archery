@@ -19,8 +19,23 @@ public:
 
 	// Variables
 
+	// difficulty
+	enum m_eDifficulty {
+		Easy = 0,
+		Medium,
+		Hard,
+		ExtremelyHard,
+		Impossible,
+		SuperImpossible,
+		DMAC,
+
+		NUM_DIFFICULTIES
+	};
+	int m_iDifficulty;
+
 	// score
 	unsigned int m_iScore;
+	
 	// arrow pool
 	TArray<AArrow*> m_aArrows;
 
@@ -64,6 +79,9 @@ public:
 
 extern ArcheryGlobals g_archeryGlobals;
 
+/*
+** GLOBAL PREPROCESSOR DEFINITIONS
+*/
 
 // the maximum number of arrows in game at once
 #define MAX_NUM_ARROWS 15
@@ -82,10 +100,13 @@ extern ArcheryGlobals g_archeryGlobals;
 
 // the proportion of score to time that must be reached before increasing difficulty
 #define SCORE_THRESHOLD 0.1
-//TODO change this to 0.75
+//todo change to 1.0 or something
+
+// the proportion of INITIAL_TIME that will be rewarded to the player on difficulty change
+#define TIME_MULT_FACTOR 0.5
 
 // the max number of high scores displayed
-#define NUM_HIGH_SCORES 20
+#define NUM_HIGH_SCORES 5
 
 // the path to the score binary file
 #define SCORE_FILE "../../scores.scores"

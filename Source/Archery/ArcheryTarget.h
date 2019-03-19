@@ -11,6 +11,7 @@
 #include "Components/BoxComponent.h"
 #include "Components/AudioComponent.h"
 #include "Sound/SoundCue.h"
+#include "MovingComponent.h"
 #include "ArcheryTarget.generated.h"
 
 /**
@@ -36,12 +37,13 @@ public:
 	// Variables
 	bool m_bActive;
 	bool m_bDeactivation;
-	bool m_bMoving;
 	bool m_bDeletable; // signifies when the ArcheryTargetManager is able to destroy the actor
 	bool m_bBreakByPlayer;
 
 	float m_fDeactivateTime;
 	float m_fDeactivateTimeFinal;
+
+	MovingComponent m_Move;
 
 	// Functions
 	void PreInit() override;
@@ -53,6 +55,9 @@ public:
 	UFUNCTION()
 	void OnTargetOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
 
+	UFUNCTION()
+	void OnFracture(const FVector& HitPoint, const FVector& HitDirection);
+	
 	void DefaultThink() override;
 };
 

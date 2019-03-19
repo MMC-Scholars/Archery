@@ -1,6 +1,7 @@
 
 
 #include "ArcheryTargetManager.h"
+#include "Archery.h"
 
 
 AArcheryTargetManager::AArcheryTargetManager() {
@@ -45,13 +46,24 @@ FVector AArcheryTargetManager::randBoundLoc() {
 
 void AArcheryTargetManager::DefaultThink() {
 
-	// destroy any necessary targets
 	for (int i = 0; i < m_aTargets.Num(); i++) {
+		AArcheryTarget* target = m_aTargets[i];
+
+		// move targets accordingly
+		if (target->m_Move.IsMoving()) {
+			FVector loc = target->GetActorLocation();
+			target->m_Move.NextMovement(&loc);
+			target->SetActorLocation(loc);
+		}
+
+		// destroy any necessary targets
 		if (m_aTargets[i]->m_bDeletable) {
 			AArcheryTarget* x = m_aTargets[i];
 			m_aTargets.Remove(x);
 			x->DestroyEntity();
 		}
+
+
 	}
 
 	if (m_bSpawning) {
@@ -62,6 +74,11 @@ void AArcheryTargetManager::DefaultThink() {
 			FVector loc = randBoundLoc();
 
 			AArcheryTarget* target = (AArcheryTarget*)GetWorld()->SpawnActor(AArcheryTarget::StaticClass(), &loc);
+
+			// if difficulty is high enough...
+			if (g_archeryGlobals.m_iDifficulty >= g_archeryGlobals.Medium) {
+				target->m_Move.Move(target->GetActorLocation(), randBoundLoc());
+			}
 
 			m_aTargets.Add(target);
 
