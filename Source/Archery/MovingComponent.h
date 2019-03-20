@@ -5,16 +5,19 @@
 class MovingComponent {
 
 private:
+
 	FVector m_vStart;
 	FVector m_vEnd;
 
-	FVector m_vForward;
+	float m_fScaleFactor;
+	float m_fInterp;
 
 	bool m_bIsMoving;
 
 	int m_iSpeedFactor;
 
 public:
+
 	// Constructor
 	MovingComponent();
 
@@ -27,9 +30,7 @@ public:
 
 private:
 
-	bool PointIsOnLine(FVector pos, FVector start, FVector end);
-
-	FVector ClosestPoint(FVector pos, FVector start, FVector end);
+	FVector Interpolate(FVector start, FVector end, int(*easing)(int x) = nullptr);
 
 public:
 

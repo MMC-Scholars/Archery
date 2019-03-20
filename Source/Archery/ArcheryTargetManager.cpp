@@ -46,11 +46,19 @@ FVector AArcheryTargetManager::randBoundLoc() {
 
 void AArcheryTargetManager::DefaultThink() {
 
+	//int active = 0;
+	//int moving = 0;
+
 	for (int i = 0; i < m_aTargets.Num(); i++) {
 		AArcheryTarget* target = m_aTargets[i];
 
 		// move targets accordingly
 		if (target->m_Move.IsMoving()) {
+			//todo check if near other target
+			//FVector loc1 = target->m_Move.m_vStart;
+			//FVector loc2 = target->m_Move.m_vEnd;
+			//Msg("from (%f, %f, %f) to (%f, %f, %f)", loc1.X, loc1.Y, loc1.Z, loc2.X, loc2.Y, loc2.Z);
+			
 			FVector loc = target->GetActorLocation();
 			target->m_Move.NextMovement(&loc);
 			target->SetActorLocation(loc);
@@ -63,21 +71,37 @@ void AArcheryTargetManager::DefaultThink() {
 			x->DestroyEntity();
 		}
 
+		//if (target->m_bActive) active++;
+		//if (target->m_Move.IsMoving()) moving++;
 
 	}
+
+	//Msg("Num targets: %d", m_aTargets.Num());
+	//Msg("Num targets active: %d", active);
+	//Msg("Num targets moving: %d", moving);
+
 
 	if (m_bSpawning) {
 		
 		if (m_aTargets.Num() < m_iMaxTargets) {
 
 			// random spawn location
-			FVector loc = randBoundLoc();
+			FVector startPoint = randBoundLoc();
+			FVector endPoint = FVector(0, 0, 0);
 
-			AArcheryTarget* target = (AArcheryTarget*)GetWorld()->SpawnActor(AArcheryTarget::StaticClass(), &loc);
+			AArcheryTarget* target = (AArcheryTarget*)GetWorld()->SpawnActor(AArcheryTarget::StaticClass(), &startPoint);
 
 			// if difficulty is high enough...
-			if (g_archeryGlobals.m_iDifficulty >= g_archeryGlobals.Medium) {
-				target->m_Move.Move(target->GetActorLocation(), randBoundLoc());
+			//if (g_archeryGlobals.m_iDifficulty >= g_archeryGlobals.Medium) {
+			if (g_archeryGlobals.m_iDifficulty >= g_archeryGlobals.Easy) {
+
+				//todo set speed				
+
+				do {
+					endPoint = randBoundLoc();
+				} while ( (endPoint - startPoint).Size() < TARGET_VICINITY_THRESHOLD);
+
+				target->m_Move.Move(startPoint, endPoint);
 			}
 
 			m_aTargets.Add(target);

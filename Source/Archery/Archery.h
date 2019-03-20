@@ -87,7 +87,11 @@ extern ArcheryGlobals g_archeryGlobals;
 #define MAX_NUM_ARROWS 15
 
 // the maximum number of targets activated at once
-#define MAX_NUM_TARGETS 20
+#define MAX_NUM_TARGETS 1
+//todo default 20
+
+// the minimum distance between a moving target's start and end point
+#define TARGET_VICINITY_THRESHOLD 100
 
 // the countdown time (seconds) before the game starts
 #define COUNTDOWN_TIME 11

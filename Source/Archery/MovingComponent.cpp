@@ -1,75 +1,83 @@
 
 #include "MovingComponent.h"
+#include "System/NLogger.h"
 
 MovingComponent::MovingComponent() {
-	m_vEnd = FVector(0, 0, 0);
-
 	m_bIsMoving = false;
-
-	m_iSpeedFactor = 1;
+	m_iSpeedFactor = 2;
 }
 
 void MovingComponent::Move(FVector start, FVector end) {
 	m_vStart = start;
 	m_vEnd = end;
 
-	// calculate forward unit vector
-	//todo make simpler
-	m_vForward = m_vEnd - m_vStart;
-	m_vForward.GetSafeNormal(1);
-	m_vForward.Normalize(1);
+	m_fScaleFactor = 0.001;
+	m_fInterp = 0;
 
 	m_bIsMoving = true;
 }
 
-bool MovingComponent::IsMoving() {
-	return m_bIsMoving;
-}
+bool MovingComponent::IsMoving() { return m_bIsMoving; }
 
-void MovingComponent::SetSpeed(int speed) {
-	m_iSpeedFactor = speed;
-}
+void MovingComponent::SetSpeed(int speed) { m_iSpeedFactor = speed; }
 
-bool MovingComponent::PointIsOnLine(FVector pos, FVector start, FVector end) {
-	// why Unreal doesn't include a function like this is beyond me.
-	return (
-		(pos.X >= start.X && pos.X <= end.X
-		&& pos.Y >= start.Y && pos.Y <= end.Y
-		&& pos.Z >= start.Z && pos.Z <= end.Z)
-		||
-		(pos.X <= start.X && pos.X >= end.X
-		&& pos.Y <= start.Y && pos.Y >= end.Y
-		&& pos.Z <= start.Z && pos.Z >= end.Z)
-	);
-}
+FVector MovingComponent::Interpolate(FVector start, FVector end, int(*easing)(int x)) {
 
-FVector MovingComponent::ClosestPoint(FVector pos, FVector start, FVector end) {
+	// default linear easing function
+	if (!easing) easing = [](int x) { return x; };
 	
-	FVector point = FVector(0, 0, 0);
+	FVector delta = end - start;
 
-	FVector v1 = pos - start;
-	FVector v2 = pos - end;
+	// change scale factor accordingly
+	if (m_fInterp > 1 || m_fInterp < 0) m_fScaleFactor *= -1;
 
-	if (v1.Size() > v2.Size()) point = end;
-	else point = start;
+	// update interp value
+	m_fInterp += m_fScaleFactor * m_iSpeedFactor;
 
-	return point;
+	return start + delta * m_fInterp;
 }
+
 
 void MovingComponent::NextMovement(FVector* pos) {
-	// only if moving
-	if (m_bIsMoving) {
-
-		// destination reached
-		if (!PointIsOnLine(*pos, m_vStart, m_vEnd)) {
-			*pos = ClosestPoint(*pos, m_vStart, m_vEnd);
-			m_vForward *= -1;
-		}
-		
-		// continue moving
-		else {
-			*pos += m_iSpeedFactor * m_vForward;
-		}
-
-	}
+	// only if moving, update position
+	if (m_bIsMoving) *pos = Interpolate(m_vStart, m_vEnd);
 }
+
+
+
+
+
+
+
+/*
+void (MovingComponent::* pMemberFunc)(bool) = NULL;
+
+void playground() {
+	MovingComponent mc;
+	MovingComponent* pMc = &mc;
+	(pMc->*pMemberFunc)(false);
+
+	int j = 0;
+
+	auto pFunc = [](int i) { Msg("%i", i); };
+
+
+}
+
+void SayHello(FString name) {
+	Msg(L"Hello %s", WCStr(name));
+}
+
+void SayGoodbye(FString name, bool newline) {
+	Msg(L"Goodbye %s", WCStr(name));
+	if (newline) Msg("\n");
+}
+
+void(*g_pSaying)(FString) = &SayHello;
+
+void playground(int) {
+	(*g_pSaying)("Bob");
+	g_pSaying = &SayGoodbye;
+	g_pSaying("Bob");
+}
+*/
