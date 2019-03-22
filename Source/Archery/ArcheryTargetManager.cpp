@@ -46,40 +46,37 @@ FVector AArcheryTargetManager::randBoundLoc() {
 
 void AArcheryTargetManager::DefaultThink() {
 
-	//int active = 0;
-	//int moving = 0;
-
 	for (int i = 0; i < m_aTargets.Num(); i++) {
 		AArcheryTarget* target = m_aTargets[i];
 
 		// move targets accordingly
 		if (target->m_Move.IsMoving()) {
-			//todo check if near other target
-			//FVector loc1 = target->m_Move.m_vStart;
-			//FVector loc2 = target->m_Move.m_vEnd;
-			//Msg("from (%f, %f, %f) to (%f, %f, %f)", loc1.X, loc1.Y, loc1.Z, loc2.X, loc2.Y, loc2.Z);
-			
-			FVector loc = target->GetActorLocation();
-			target->m_Move.NextMovement(&loc);
+
+			// if target is about to break
+			if (target->m_bWillBreak) {
+				// just delete and respawn
+				target->m_bDeletable = true;
+			}
+
+			FVector loc = target->GetActorLocation();	
+			FRotator rot = target->GetActorRotation();
+
+			target->m_Move.NextMovement(&loc, &rot);
 			target->SetActorLocation(loc);
+
+			// rotate targets accordingly
+			if (target->m_Move.IsRotating()) target->SetActorRotation(rot);
 		}
 
 		// destroy any necessary targets
-		if (m_aTargets[i]->m_bDeletable) {
+		if (target->m_bDeletable) {
 			AArcheryTarget* x = m_aTargets[i];
 			m_aTargets.Remove(x);
+			x->m_Move.FreezeMovement();
 			x->DestroyEntity();
 		}
 
-		//if (target->m_bActive) active++;
-		//if (target->m_Move.IsMoving()) moving++;
-
 	}
-
-	//Msg("Num targets: %d", m_aTargets.Num());
-	//Msg("Num targets active: %d", active);
-	//Msg("Num targets moving: %d", moving);
-
 
 	if (m_bSpawning) {
 		
@@ -91,17 +88,23 @@ void AArcheryTargetManager::DefaultThink() {
 
 			AArcheryTarget* target = (AArcheryTarget*)GetWorld()->SpawnActor(AArcheryTarget::StaticClass(), &startPoint);
 
-			// if difficulty is high enough...
-			//if (g_archeryGlobals.m_iDifficulty >= g_archeryGlobals.Medium) {
-			if (g_archeryGlobals.m_iDifficulty >= g_archeryGlobals.Easy) {
-
-				//todo set speed				
+			if (g_archeryGlobals.m_iDifficulty >= g_archeryGlobals.Medium) {
+				
+				// movement
 
 				do {
 					endPoint = randBoundLoc();
 				} while ( (endPoint - startPoint).Size() < TARGET_VICINITY_THRESHOLD);
 
+				target->m_Move.SetSpeed(g_archeryGlobals.m_iDifficulty);
 				target->m_Move.Move(startPoint, endPoint);
+
+				// rotation
+
+				if (g_archeryGlobals.m_iDifficulty >= g_archeryGlobals.ExtremelyHard) {
+					target->m_Move.Rotate(target->GetActorRotation());
+				}
+
 			}
 
 			m_aTargets.Add(target);

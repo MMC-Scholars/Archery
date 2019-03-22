@@ -30,8 +30,8 @@ AArcheryTarget::AArcheryTarget() {
 	// calculate collision bounds based on static mesh
 	m_pCollision = CreateDefaultSubobject<UBoxComponent>("Collision Box");
 	
-	FVector bounds = m_pTargetMesh->DestructibleMesh->SourceStaticMesh->GetBounds().GetBox().GetSize() / 2;
-	m_pCollision->SetBoxExtent(bounds); // rescaling
+	FVector bounds = m_pTargetMesh->DestructibleMesh->SourceStaticMesh->GetBounds().GetBox().GetSize();
+	m_pCollision->SetBoxExtent(bounds / 2); // rescaling
 
 	m_pCollision->OnComponentBeginOverlap.AddDynamic(this, &AArcheryTarget::OnTargetOverlap);
 	m_pTargetMesh->OnComponentFracture.AddUniqueDynamic(this, &AArcheryTarget::OnFracture);
@@ -53,6 +53,7 @@ void AArcheryTarget::PreInit() {
 void AArcheryTarget::Activate() {
 	m_bActive = true;
 	m_bDeactivation = false;
+	m_bWillBreak = false;
 	m_bBreakByPlayer = false;
 
 	m_Move = MovingComponent();
@@ -99,6 +100,11 @@ void AArcheryTarget::OnTargetOverlap(UPrimitiveComponent* OverlappedComp, AActor
 			}
 		}
 
+		// if a target touches another target
+		else if (OtherActor->GetClass() == AArcheryTarget::StaticClass()) {
+			m_bWillBreak = true;
+		}
+
 	}
 }
 
@@ -108,25 +114,12 @@ void AArcheryTarget::OnFracture(const FVector& HitPoint, const FVector& HitDirec
 }
 
 void AArcheryTarget::DefaultThink() {
-	// Active
-	if (m_bActive) {
-		if (g_archeryGlobals.m_iDifficulty >= g_archeryGlobals.Medium) {
-			//TODO move targets here using bMoving
-		}
-
-	}
-	
-	// Inactive
-	else {
-		// Deactivation
-		if (m_bDeactivation) {
-
-			if ((g_pGlobals->curtime - m_fDeactivateTime) > m_fDeactivateTimeFinal) {
-				m_bDeactivation = false;
-				m_pTargetMesh->SetSimulatePhysics(false);
-				m_bDeletable = true;
-			}
-
+	// inactive and deactivated
+	if (!m_bActive && m_bDeactivation) {
+		if ((g_pGlobals->curtime - m_fDeactivateTime) > m_fDeactivateTimeFinal) {
+			m_bDeactivation = false;
+			m_pTargetMesh->SetSimulatePhysics(false);
+			m_bDeletable = true;
 		}
 	}
 }

@@ -64,10 +64,9 @@ AArrow::AArrow() {
 	static ConstructorHelpers::FObjectFinder<USoundCue> CueArrowShoot(CUE_ARROW_SHOOT);
 	m_pCueArrowShoot = CueArrowShoot.Object;
 
-	// null RootComponent bug fix
-	if (GetParentActor() != NULL) {
-		GetParentActor()->SetRootComponent(m_pPickupMeshComponent);
-	}
+	// null RootComponent (bug fix?)
+	if (RootComponent == NULL) SetRootComponent(m_pPickupMeshComponent);
+
 }
 
 void AArrow::PreInit() {

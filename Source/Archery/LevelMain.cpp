@@ -69,7 +69,6 @@ void ALevelMain::SetScoreboard(int score, float time) {
 	char str[100];
 
 	char *diff;
-	//todo change this?
 	switch (g_archeryGlobals.m_iDifficulty) {
 		case 6: { diff = "DMac"; break; }
 		case 5: { diff = "Super Impossible"; break; }
@@ -128,8 +127,9 @@ void ALevelMain::DefaultThink() {
 			
 			/* check score for difficulty change */
 			
-			if ( (int) g_archeryGlobals.m_iScore >= m_iMaxTime * SCORE_THRESHOLD) {
-				if (g_archeryGlobals.m_iDifficulty < g_archeryGlobals.NUM_DIFFICULTIES - 1) {
+			//if ( (int) g_archeryGlobals.m_iScore >= m_iMaxTime * SCORE_THRESHOLD) {
+			if ((int)g_archeryGlobals.m_iScore >= m_iMaxTime * SCORE_THRESHOLD) {
+					if (g_archeryGlobals.m_iDifficulty < g_archeryGlobals.NUM_DIFFICULTIES - 1) {
 					// increase time
 					m_iMaxTime += INITIAL_TIME * TIME_MULT_FACTOR;
 

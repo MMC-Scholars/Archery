@@ -3,8 +3,14 @@
 #include "System/NLogger.h"
 
 MovingComponent::MovingComponent() {
+	FreezeMovement();
+}
+
+void MovingComponent::FreezeMovement() {
+	m_fSpeedFactor = 1.0;
+
 	m_bIsMoving = false;
-	m_iSpeedFactor = 2;
+	m_bIsRotating = false;
 }
 
 void MovingComponent::Move(FVector start, FVector end) {
@@ -12,19 +18,24 @@ void MovingComponent::Move(FVector start, FVector end) {
 	m_vEnd = end;
 
 	m_fScaleFactor = 0.001;
-	m_fInterp = 0;
+	m_fInterp = 0.0;
 
 	m_bIsMoving = true;
 }
 
 bool MovingComponent::IsMoving() { return m_bIsMoving; }
 
-void MovingComponent::SetSpeed(int speed) { m_iSpeedFactor = speed; }
+void MovingComponent::Rotate(FRotator rot) {
+	m_rStart = rot;
 
-FVector MovingComponent::Interpolate(FVector start, FVector end, int(*easing)(int x)) {
+	m_bIsRotating = true;
+}
 
-	// default linear easing function
-	if (!easing) easing = [](int x) { return x; };
+bool MovingComponent::IsRotating() { return m_bIsRotating; }
+
+void MovingComponent::SetSpeed(float speed) { m_fSpeedFactor = speed; }
+
+FVector MovingComponent::Interpolate(FVector start, FVector end, FRotator* rot) {
 	
 	FVector delta = end - start;
 
@@ -32,52 +43,16 @@ FVector MovingComponent::Interpolate(FVector start, FVector end, int(*easing)(in
 	if (m_fInterp > 1 || m_fInterp < 0) m_fScaleFactor *= -1;
 
 	// update interp value
-	m_fInterp += m_fScaleFactor * m_iSpeedFactor;
+	m_fInterp += m_fScaleFactor * m_fSpeedFactor;
+	
+	// update rotation
+	FRotator r = m_rStart;
+	if (m_bIsRotating) *rot = FRotator(r.Pitch+1, r.Roll+1, r.Yaw+1) * 360 * m_fInterp;
 
 	return start + delta * m_fInterp;
 }
 
-
-void MovingComponent::NextMovement(FVector* pos) {
+void MovingComponent::NextMovement(FVector* pos, FRotator* rot) {
 	// only if moving, update position
-	if (m_bIsMoving) *pos = Interpolate(m_vStart, m_vEnd);
+	if (m_bIsMoving) *pos = Interpolate(m_vStart, m_vEnd, rot);
 }
-
-
-
-
-
-
-
-/*
-void (MovingComponent::* pMemberFunc)(bool) = NULL;
-
-void playground() {
-	MovingComponent mc;
-	MovingComponent* pMc = &mc;
-	(pMc->*pMemberFunc)(false);
-
-	int j = 0;
-
-	auto pFunc = [](int i) { Msg("%i", i); };
-
-
-}
-
-void SayHello(FString name) {
-	Msg(L"Hello %s", WCStr(name));
-}
-
-void SayGoodbye(FString name, bool newline) {
-	Msg(L"Goodbye %s", WCStr(name));
-	if (newline) Msg("\n");
-}
-
-void(*g_pSaying)(FString) = &SayHello;
-
-void playground(int) {
-	(*g_pSaying)("Bob");
-	g_pSaying = &SayGoodbye;
-	g_pSaying("Bob");
-}
-*/
