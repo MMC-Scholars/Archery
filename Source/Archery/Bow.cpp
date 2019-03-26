@@ -38,16 +38,11 @@ ABow::ABow() {
 	m_pStringBot->SetupAttachment(RootComponent);
 
 	m_pPickupMeshComponent->SetSimulatePhysics(false);
-
 }
 
 void ABow::PreInit() {
 	// reset hands before the game starts
 	g_archeryGlobals.resetHands();
-
-	// set reset properties
-	m_vInitLoc = GetActorLocation();
-	m_rInitRot = GetActorRotation();
 
 	// reset attached arrow
 	m_pNotchedArrow = nullptr;
@@ -59,11 +54,16 @@ void ABow::PreInit() {
 	m_sStringProps.Duration = 0.1f;
 
 	ResetBow();
+
+	m_pPickupMeshComponent->SetRenderCustomDepth(false);
 }
 
 void ABow::ResetBow() {
+	// reset bowstring location
+	m_pStringMid->SetRelativeLocation(m_vInitStringLoc);
 	// detatch from any actors
-	DetachFromActor(FDetachmentTransformRules::KeepWorldTransform);
+	if (HasValidRootComponent()) DetachFromActor(FDetachmentTransformRules::KeepWorldTransform);
+	else SetRootComponent(m_pPickupMeshComponent);
 	g_pLeftController->m_aAttachActors.Remove(this);
 	g_pRightController->m_aAttachActors.Remove(this);
 	// clear haptics
@@ -74,15 +74,12 @@ void ABow::ResetBow() {
 	m_aParentActors.Empty();
 	g_archeryGlobals.resetHands();
 	// reset arrow
-	if (m_pNotchedArrow) {
-		if (m_pNotchedArrow->GetAttachParentActor())
-			m_pNotchedArrow->DetachFromActor(FDetachmentTransformRules::KeepWorldTransform);
+	if (m_pNotchedArrow != nullptr) {
+		if (m_pNotchedArrow->HasValidRootComponent()) m_pNotchedArrow->DetachFromActor(FDetachmentTransformRules::KeepWorldTransform);
+		else m_pNotchedArrow->SetRootComponent(m_pNotchedArrow->m_pPickupMeshComponent);
 		m_pNotchedArrow->m_pPickupMeshComponent->SetSimulatePhysics(true);
 	}
 	m_pNotchedArrow = nullptr;
-	// reset location and rotation
-	SetActorLocation(m_vInitLoc);
-	SetActorRotation(m_rInitRot);
 	// disable physics
 	m_pPickupMeshComponent->SetSimulatePhysics(false);
 	m_pPickupMeshComponent->SetRenderCustomDepth(true);
@@ -112,20 +109,14 @@ void ABow::Pickup(ABaseController* controller) {
 }
 
 void ABow::OnDrop_Implementation(ABaseController* controller) {
-	// only one hand can hold the bow at a time
-	m_aParentActors.Empty();
-	// reset bow and arrow hands
-	g_archeryGlobals.resetHands();
+	ResetBow();
 }
 
 void ABow::ArrowNotch(AArrow* arrow) {
-	
 	// notch arrow
 	arrow->m_bIsNotched = true;
-
 	// set notched arrow
 	m_pNotchedArrow = arrow;
-
 }
 
 void ABow::DefaultThink() {
@@ -142,8 +133,7 @@ void ABow::DefaultThink() {
 		FVector aLoc = g_archeryGlobals.getArrowHand()->GetActorLocation();
 
 		// get arrow forward and rotation vectors
-		FVector forward = FVector(bLoc.X - aLoc.X, bLoc.Y - aLoc.Y, bLoc.Z - aLoc.Z);
-		forward.GetSafeNormal(1);
+		FVector forward = FVector(bLoc.X - aLoc.X, bLoc.Y - aLoc.Y, bLoc.Z - aLoc.Z).GetSafeNormal(1);
 		forward.Normalize(1);
 		FRotator aRot = forward.Rotation();
 

@@ -24,7 +24,7 @@ AArrow::AArrow() {
 	m_pPickupMeshComponent->SetStaticMesh(FindMesh(ARROW_MESH));
 
 	// null RootComponent bug fix
-	this->SetRootComponent(m_pPickupMeshComponent);
+	if (this) SetRootComponent(m_pPickupMeshComponent);
 	
 	// Arrow Head Collision Box
 	
@@ -75,19 +75,22 @@ void AArrow::PreInit() {
 }
 
 void AArrow::ResetArrow(FVector loc) {
-	// detach from all actors
-	DetachFromActor(FDetachmentTransformRules::KeepWorldTransform);
-	// simulate physics
-	m_pPickupMeshComponent->SetRenderCustomDepth(true);
-	m_pPickupMeshComponent->SetSimulatePhysics(true);
-	// reset particle system
-	m_pParticleSystem->Deactivate();
-	// set actor location
-	SetActorLocation(loc);
+	if (this) { // bug fix
+		// detach from all actors
+		if (HasValidRootComponent()) DetachFromActor(FDetachmentTransformRules::KeepWorldTransform);
+		else SetRootComponent(m_pPickupMeshComponent);
+		// simulate physics
+		m_pPickupMeshComponent->SetRenderCustomDepth(true);
+		m_pPickupMeshComponent->SetSimulatePhysics(true);
+		// reset particle system
+		m_pParticleSystem->Deactivate();
+		// set actor location
+		SetActorLocation(loc);
 
-	// reset states
-	m_bIsNotched = false;
-	m_bIsFired = false;
+		// reset states
+		m_bIsNotched = false;
+		m_bIsFired = false;
+	}
 }
 
 void AArrow::Pickup(ABaseController* controller) {
@@ -145,7 +148,9 @@ void AArrow::FireArrow(float velocity, FVector forward) {
 	m_vForward = forward;
 	
 	// detach from parent
-	DetachFromActor(FDetachmentTransformRules::KeepWorldTransform);
+
+	if (HasValidRootComponent()) DetachFromActor(FDetachmentTransformRules::KeepWorldTransform);
+	else SetRootComponent(m_pPickupMeshComponent);
 
 	// enable arrow particles
 	m_pParticleSystem->Activate();

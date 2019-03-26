@@ -66,7 +66,7 @@ void ALevelMain::StartGame() {
 }
 
 void ALevelMain::SetScoreboard(int score, float time) {
-	char str[100];
+	char str[128];
 
 	char *diff;
 	switch (g_archeryGlobals.m_iDifficulty) {
@@ -80,6 +80,7 @@ void ALevelMain::SetScoreboard(int score, float time) {
 	}
 
 	sprintf_s(str, "Score: %d\nTime: %4.2f\nDifficulty: %s", score, time, diff);
+
 	(m_pScoreText->GetTextRender())->SetText( FText::FromString(ANSI_TO_TCHAR(str)) );
 }
 
@@ -127,7 +128,6 @@ void ALevelMain::DefaultThink() {
 			
 			/* check score for difficulty change */
 			
-			//if ( (int) g_archeryGlobals.m_iScore >= m_iMaxTime * SCORE_THRESHOLD) {
 			if ((int)g_archeryGlobals.m_iScore >= m_iMaxTime * SCORE_THRESHOLD) {
 					if (g_archeryGlobals.m_iDifficulty < g_archeryGlobals.NUM_DIFFICULTIES - 1) {
 					// increase time
@@ -150,7 +150,19 @@ void ALevelMain::DefaultThink() {
 				
 				// results
 				if (m_pResultsText) {
-					char str[100];
+					char str[256];
+					/*
+					char *tag;
+					switch (g_archeryGlobals.m_iDifficulty) {
+					case 6: { tag = "There's no way you made it this far"; break; }
+					case 5: { tag = "Great!"; break; }
+					case 4: { tag = "Nice job!"; break; }
+					case 3: { tag = "Pretty good!"; break; }
+					case 2: { tag = "Is that really the best you can do?"; break; }
+					case 1: { tag = "Good I guess?"; break; }
+					default: { tag = "Are you even trying?"; break; }
+					*/
+					//sprintf_s(str, "\nYou earned %u points in %d seconds!\n%s", score, m_iMaxTime, tag);
 					sprintf_s(str, "\nYou earned %u points in %d seconds!", score, m_iMaxTime);
 					FString result = FString(str);
 

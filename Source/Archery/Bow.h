@@ -30,9 +30,6 @@ public:
 
 	// Variables
 
-	// reset
-	FVector m_vInitLoc;
-	FRotator m_rInitRot;
 	// string
 	SLineDrawParams m_sStringProps;
 	FVector m_vInitStringLoc;

@@ -87,7 +87,7 @@ extern ArcheryGlobals g_archeryGlobals;
 #define MAX_NUM_ARROWS 15
 
 // the maximum number of targets activated at once
-#define MAX_NUM_TARGETS 15
+#define MAX_NUM_TARGETS 10
 
 // the minimum distance between a moving target's start and end point
 #define TARGET_VICINITY_THRESHOLD 200
@@ -102,7 +102,7 @@ extern ArcheryGlobals g_archeryGlobals;
 #define INITIAL_TIME 60
 
 // the proportion of score to time that must be reached before increasing difficulty
-#define SCORE_THRESHOLD 0.7
+#define SCORE_THRESHOLD 0.5
 
 // the proportion of INITIAL_TIME that will be rewarded to the player on difficulty change
 #define TIME_MULT_FACTOR 0.5
