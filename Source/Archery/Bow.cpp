@@ -6,7 +6,7 @@
 #include "Archery.h"
 #include "APickup/APickup.h"
 #include <cmath>
-
+#include "System/EHandle.h"
 #include "System/NLogger.h"
 
 #define BOW_MESH L"StaticMesh'/Game/Meshes/Bow.Bow'"
@@ -38,6 +38,8 @@ ABow::ABow() {
 	m_pStringBot->SetupAttachment(RootComponent);
 
 	m_pPickupMeshComponent->SetSimulatePhysics(false);
+
+	if (!RootComponent) SetRootComponent(m_pPickupMeshComponent);
 }
 
 void ABow::PreInit() {
@@ -74,7 +76,7 @@ void ABow::ResetBow() {
 	m_aParentActors.Empty();
 	g_archeryGlobals.resetHands();
 	// reset arrow
-	if (m_pNotchedArrow != nullptr) {
+	if (EHANDLE(m_pNotchedArrow)) {
 		if (m_pNotchedArrow->HasValidRootComponent()) m_pNotchedArrow->DetachFromActor(FDetachmentTransformRules::KeepWorldTransform);
 		else m_pNotchedArrow->SetRootComponent(m_pNotchedArrow->m_pPickupMeshComponent);
 		m_pNotchedArrow->m_pPickupMeshComponent->SetSimulatePhysics(true);
@@ -86,6 +88,9 @@ void ABow::ResetBow() {
 }
 
 void ABow::Pickup(ABaseController* controller) {
+	// clear help string to hide help text
+	if (m_pHelpText) m_pHelpText->GetTextRender()->SetText(FText::FromString(ANSI_TO_TCHAR("")));
+
 	m_pPickupMeshComponent->SetSimulatePhysics(false);
 
 	// if no hands are holding a bow

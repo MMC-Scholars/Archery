@@ -12,6 +12,9 @@ ALevelMain::ALevelMain() {
 }
 
 void ALevelMain::PostInit() {
+	// clear arrow array fix
+	for (int i = 0; i < g_archeryGlobals.m_aEArrows.Num(); i++) g_archeryGlobals.m_aEArrows.RemoveAt(0);
+
 	if (m_pLeaderboardsText) m_pLeaderboardsText->GetTextRender()->SetText(FText::FromString(""));
 
 	if (m_pTargetManager) ResetGame();
@@ -32,6 +35,9 @@ void ALevelMain::ResetGame() {
 	m_fDisplayTime = 0.00;
 	// score
 	g_archeryGlobals.m_iScore = 0;
+	// accuracy
+	g_archeryGlobals.m_iNumHit = 0;
+	g_archeryGlobals.m_iNumMiss = 0;
 	// scoreboard
 	SetScoreboard(g_archeryGlobals.m_iScore, m_fDisplayTime);
 	// countdown
@@ -151,19 +157,12 @@ void ALevelMain::DefaultThink() {
 				// results
 				if (m_pResultsText) {
 					char str[256];
-					/*
-					char *tag;
-					switch (g_archeryGlobals.m_iDifficulty) {
-					case 6: { tag = "There's no way you made it this far"; break; }
-					case 5: { tag = "Great!"; break; }
-					case 4: { tag = "Nice job!"; break; }
-					case 3: { tag = "Pretty good!"; break; }
-					case 2: { tag = "Is that really the best you can do?"; break; }
-					case 1: { tag = "Good I guess?"; break; }
-					default: { tag = "Are you even trying?"; break; }
-					*/
-					//sprintf_s(str, "\nYou earned %u points in %d seconds!\n%s", score, m_iMaxTime, tag);
-					sprintf_s(str, "\nYou earned %u points in %d seconds!", score, m_iMaxTime);
+
+					float hit = (float)g_archeryGlobals.m_iNumHit;
+					float total = (float) g_archeryGlobals.m_iNumHit + g_archeryGlobals.m_iNumMiss;
+					float accuracy = (total != 0) ? 100*(hit / total) : 0;
+
+					sprintf_s(str, "\nYou earned %u points in %d seconds!\nYour accuracy: %0.2f%%", score, m_iMaxTime, accuracy);
 					FString result = FString(str);
 
 					m_pResultsText->GetTextRender()->SetText(FText::FromString(result));

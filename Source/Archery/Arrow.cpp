@@ -64,9 +64,6 @@ AArrow::AArrow() {
 	static ConstructorHelpers::FObjectFinder<USoundCue> CueArrowShoot(CUE_ARROW_SHOOT);
 	m_pCueArrowShoot = CueArrowShoot.Object;
 
-	// null RootComponent (bug fix?)
-	if (RootComponent == NULL) SetRootComponent(m_pPickupMeshComponent);
-
 }
 
 void AArrow::PreInit() {
@@ -75,7 +72,7 @@ void AArrow::PreInit() {
 }
 
 void AArrow::ResetArrow(FVector loc) {
-	if (this) { // bug fix
+	if (this && m_pPickupMeshComponent) { // bug fix
 		// detach from all actors
 		if (HasValidRootComponent()) DetachFromActor(FDetachmentTransformRules::KeepWorldTransform);
 		else SetRootComponent(m_pPickupMeshComponent);
@@ -84,12 +81,13 @@ void AArrow::ResetArrow(FVector loc) {
 		m_pPickupMeshComponent->SetSimulatePhysics(true);
 		// reset particle system
 		m_pParticleSystem->Deactivate();
-		// set actor location
-		SetActorLocation(loc);
 
 		// reset states
 		m_bIsNotched = false;
 		m_bIsFired = false;
+
+		// set actor location
+		SetActorLocation(loc);
 	}
 }
 
@@ -197,6 +195,9 @@ void AArrow::OnOverlapBeginHead(UPrimitiveComponent* OverlappedComp, AActor* Oth
 			else if (OtherActor->IsA(AArcheryController::StaticClass())) {}
 			// if arrow hits anything else, stop
 			else {
+				// increase miss accuracy
+				g_archeryGlobals.m_iNumMiss++;
+
 				m_pParticleSystem->Deactivate();
 				m_bIsFired = false;
 			}

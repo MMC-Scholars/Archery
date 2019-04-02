@@ -5,6 +5,8 @@
 #include "CoreMinimal.h"
 #include "VRBase/APickup/APickup.h"
 #include "Components/SceneComponent.h"
+#include "Components/TextRenderComponent.h"
+#include "Engine/TextRenderActor.h"
 #include "LineTools/linetools.h"
 #include "Arrow.h"
 #include "Bow.generated.h"
@@ -29,6 +31,10 @@ public:
 	USceneComponent* m_pStringMid;
 
 	// Variables
+
+	// UProperty to hide help text as needed
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Help Text")
+	ATextRenderActor* m_pHelpText;
 
 	// string
 	SLineDrawParams m_sStringProps;

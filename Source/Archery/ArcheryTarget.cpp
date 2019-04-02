@@ -96,7 +96,8 @@ void AArcheryTarget::OnTargetOverlap(UPrimitiveComponent* OverlappedComp, AActor
 				Deactivate(arrow->m_fVelocity);
 				// increment score
 				g_archeryGlobals.m_iScore++;
-
+				// increase hit accuracy
+				g_archeryGlobals.m_iNumHit++;
 			}
 		}
 
