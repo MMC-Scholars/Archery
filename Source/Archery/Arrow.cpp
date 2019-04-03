@@ -83,6 +83,7 @@ void AArrow::ResetArrow(FVector loc) {
 		m_pParticleSystem->Deactivate();
 
 		// reset states
+		m_bHasMadeContact = false;
 		m_bIsNotched = false;
 		m_bIsFired = false;
 
@@ -183,8 +184,9 @@ void AArrow::OnOverlapBeginHead(UPrimitiveComponent* OverlappedComp, AActor* Oth
 
 			// if arrow hits target
 			if (OtherActor->IsA(AArcheryTarget::StaticClass())) {
-
 			}
+			// if arrow hits arrow
+			else if (OtherActor->IsA(AArrow::StaticClass())) {}
 			// if arrow hits TargetManager, ignore
 			else if (OtherActor->IsA(AArcheryTargetManager::StaticClass())) {}
 			// if arrow hits bow, ignore
@@ -196,8 +198,10 @@ void AArrow::OnOverlapBeginHead(UPrimitiveComponent* OverlappedComp, AActor* Oth
 			// if arrow hits anything else, stop
 			else {
 				// increase miss accuracy
-				g_archeryGlobals.m_iNumMiss++;
-
+				if (m_bIsFired && !m_bHasMadeContact) {
+					g_archeryGlobals.m_iNumMiss++;
+					m_bHasMadeContact = true;
+				}
 				m_pParticleSystem->Deactivate();
 				m_bIsFired = false;
 			}

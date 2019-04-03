@@ -106,6 +106,10 @@ void ALevelMain::DefaultThink() {
 
 				(m_pTimerText->GetTextRender())->SetText( FText::FromString(ANSI_TO_TCHAR("GO!")) );
 				
+				// accuracy
+				g_archeryGlobals.m_iNumHit = 0;
+				g_archeryGlobals.m_iNumMiss = 0;
+
 				// setup game
 				// start spawning targets
 				m_pTargetManager->BeginSpawn(MAX_NUM_TARGETS);

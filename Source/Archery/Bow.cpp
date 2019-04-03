@@ -63,20 +63,19 @@ void ABow::PreInit() {
 void ABow::ResetBow() {
 	// reset bowstring location
 	m_pStringMid->SetRelativeLocation(m_vInitStringLoc);
-	// detatch from any actors
 	if (HasValidRootComponent()) DetachFromActor(FDetachmentTransformRules::KeepWorldTransform);
 	else SetRootComponent(m_pPickupMeshComponent);
-	g_pLeftController->m_aAttachActors.Remove(this);
-	g_pRightController->m_aAttachActors.Remove(this);
+	//g_pLeftController->m_aAttachActors.Remove(this);
+	//g_pRightController->m_aAttachActors.Remove(this);
 	// clear haptics
-	GetWorld()->GetFirstPlayerController()->SetHapticsByValue(0, 0, g_pRightController->m_eWhichHand);		
+	GetWorld()->GetFirstPlayerController()->SetHapticsByValue(0, 0, g_pRightController->m_eWhichHand);
 	GetWorld()->GetFirstPlayerController()->SetHapticsByValue(0, 0, g_pLeftController->m_eWhichHand);
 	m_bHapticPulse = false;
 	// clear bow and arrow hands
 	m_aParentActors.Empty();
 	g_archeryGlobals.resetHands();
 	// reset arrow
-	if (EHANDLE(m_pNotchedArrow)) {
+	if (m_pNotchedArrow != nullptr) {
 		if (m_pNotchedArrow->HasValidRootComponent()) m_pNotchedArrow->DetachFromActor(FDetachmentTransformRules::KeepWorldTransform);
 		else m_pNotchedArrow->SetRootComponent(m_pNotchedArrow->m_pPickupMeshComponent);
 		m_pNotchedArrow->m_pPickupMeshComponent->SetSimulatePhysics(true);
@@ -145,6 +144,15 @@ void ABow::DefaultThink() {
 		// if arrow is notched
 		if (m_pNotchedArrow->m_bIsNotched) {
 
+			// max distance from bow
+			FVector vMaxNotch = bLoc + (-1 * forward * HALF_ARROW_LENGTH * 2);
+
+			if (((aLoc.X > vMaxNotch.X && aLoc.X > bLoc.X) || (aLoc.X < vMaxNotch.X && aLoc.X < bLoc.X)) &&
+				((aLoc.Y > vMaxNotch.Y && aLoc.Y > bLoc.Y) || (aLoc.Y < vMaxNotch.Y && aLoc.Y < bLoc.Y)) &&
+				((aLoc.Z > vMaxNotch.Z && aLoc.Z > bLoc.Z) || (aLoc.Z < vMaxNotch.Z && aLoc.Z < bLoc.Z))) {
+				aLoc = vMaxNotch;
+			}
+
 			// set arrow location and rotation
 			m_pNotchedArrow->SetActorRotation(aRot);
 			m_pNotchedArrow->SetActorLocation(aLoc + (forward * HALF_ARROW_LENGTH));
@@ -162,7 +170,7 @@ void ABow::DefaultThink() {
 
 			// haptics
 			float frq = FMath::Clamp(m_fArrowVelocity / 1000 + (m_fArrowVelocity - prevArrowVelocity) / 1000, 0.01f, 0.4f);
-			float amp = FMath::Clamp(FMath::Abs((m_fArrowVelocity - prevArrowVelocity) / 5), 0.0f, 1.0f);
+			float amp = FMath::Clamp(FMath::Abs((m_fArrowVelocity - prevArrowVelocity) / 5), 0.1f, 1.0f);
 			// increased arrow hand haptics
 			GetWorld()->GetFirstPlayerController()->SetHapticsByValue(frq, amp, g_archeryGlobals.getArrowHand()->m_eWhichHand);
 			// minimized bow hand haptics

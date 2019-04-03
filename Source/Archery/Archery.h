@@ -104,8 +104,7 @@ extern ArcheryGlobals g_archeryGlobals;
 #define ENDING_SLOW_SOUND_TIME 2
 
 // the initial time (seconds) of one game
-#define INITIAL_TIME 10
-//todo change to 60
+#define INITIAL_TIME 60
 
 // the proportion of score to time that must be reached before increasing difficulty
 #define SCORE_THRESHOLD 0.5

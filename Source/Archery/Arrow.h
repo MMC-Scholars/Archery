@@ -39,6 +39,7 @@ public:
 	float m_fVelocity;
 	FVector m_vForward;
 	// states
+	bool m_bHasMadeContact;
 	bool m_bIsNotched;
 	bool m_bIsFired;
 
