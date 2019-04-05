@@ -2,6 +2,7 @@
 
 #include "ArcheryTargetManager.h"
 #include "Archery.h"
+#include "Materials/MaterialInstanceDynamic.h"
 
 
 AArcheryTargetManager::AArcheryTargetManager() {
@@ -88,8 +89,78 @@ void AArcheryTargetManager::DefaultThink() {
 
 			AArcheryTarget* target = (AArcheryTarget*)GetWorld()->SpawnActor(AArcheryTarget::StaticClass(), &startPoint);
 
+			// movement
 			if (g_archeryGlobals.m_iDifficulty >= g_archeryGlobals.Medium) {
-				
+				do {
+					endPoint = randBoundLoc();
+				} while ((endPoint - startPoint).Size() < TARGET_VICINITY_THRESHOLD);
+
+				target->m_Move.SetSpeed(g_archeryGlobals.m_iDifficulty);
+				target->m_Move.Move(startPoint, endPoint);
+			}
+
+			// rotation
+			if (g_archeryGlobals.m_iDifficulty >= g_archeryGlobals.ExtremelyHard) {
+				target->m_Move.Rotate(target->GetActorRotation());
+			}
+
+			// color
+			UMaterialInstanceDynamic* matInst = target->m_pTargetMesh->CreateDynamicMaterialInstance(0, target->m_pTargetMesh->GetMaterial(0));
+			if (matInst) {
+				switch (g_archeryGlobals.m_iDifficulty) {
+					case g_archeryGlobals.Medium: {
+						matInst->SetVectorParameterValue("TargetColor", FLinearColor(1, 0.1, 0, 1));
+						break;
+					}
+					case g_archeryGlobals.Hard: {
+						matInst->SetVectorParameterValue("TargetColor", FLinearColor(1, 0.5, 0, 1));
+						break;
+					}
+					case g_archeryGlobals.ExtremelyHard: {
+						matInst->SetVectorParameterValue("TargetColor", FLinearColor(0, 1, 0.1, 1));
+						break;
+					}
+					case g_archeryGlobals.Impossible: {
+						matInst->SetVectorParameterValue("TargetColor", FLinearColor(0, 0.5, 1, 1));
+						break;
+					}
+					case g_archeryGlobals.SuperImpossible: {
+						matInst->SetVectorParameterValue("TargetColor", FLinearColor(1, 0, 0.1, 1));
+						break;
+					}
+					case g_archeryGlobals.DMAC: {
+						// speed
+						target->m_Move.SetSpeed(g_archeryGlobals.m_iDifficulty + 5);
+					
+						matInst->SetVectorParameterValue("TargetColor", FLinearColor(10, 0, 0, 1));
+						break;
+					}
+					case g_archeryGlobals.DMAC2: {
+						// speed
+						target->m_Move.SetSpeed(g_archeryGlobals.m_iDifficulty + 10);
+					
+						matInst->SetVectorParameterValue("TargetColor", FLinearColor(200, 0, 5, 1));
+						break;
+					}
+					case g_archeryGlobals.DMACRage: {
+						// speed
+						target->m_Move.SetSpeed(g_archeryGlobals.m_iDifficulty + 20);
+
+						matInst->SetVectorParameterValue("TargetColor", FLinearColor(200, 50, 0, 1));
+						break;
+					}
+					default: break;
+				}
+				target->m_pTargetMesh->SetMaterial(0, matInst);
+			}
+			/*
+			if (matInst) {
+				matInst->SetVectorParameterValue("TargetColor", FLinearColor(0, 1, 0, 1));
+				target->m_pTargetMesh->SetMaterial(0, matInst);
+			}
+
+			if (g_archeryGlobals.m_iDifficulty >= g_archeryGlobals.Medium) {
+
 				// movement
 
 				do {
@@ -106,7 +177,7 @@ void AArcheryTargetManager::DefaultThink() {
 				}
 
 			}
-
+			*/
 			m_aTargets.Add(target);
 
 		}

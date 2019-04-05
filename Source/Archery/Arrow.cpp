@@ -162,9 +162,7 @@ void AArrow::FireArrow(float velocity, FVector forward) {
 }
 
 void AArrow::DefaultThink() {
-
 	if (m_bIsFired) {
-
 		FVector pos = GetActorLocation();
 		FRotator rot = GetActorRotation();
 
@@ -173,9 +171,7 @@ void AArrow::DefaultThink() {
 
 		SetActorLocation(pos);
 		SetActorRotation(rot);
-
 	}
-
 }
 
 void AArrow::OnOverlapBeginHead(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult) {

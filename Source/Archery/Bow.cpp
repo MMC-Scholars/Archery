@@ -89,6 +89,7 @@ void ABow::ResetBow() {
 void ABow::Pickup(ABaseController* controller) {
 	// clear help string to hide help text
 	if (m_pHelpText) m_pHelpText->GetTextRender()->SetText(FText::FromString(ANSI_TO_TCHAR("")));
+	if (m_pHelpText2) m_pHelpText2->GetTextRender()->SetText(FText::FromString(ANSI_TO_TCHAR("")));
 
 	m_pPickupMeshComponent->SetSimulatePhysics(false);
 
@@ -179,11 +180,16 @@ void ABow::DefaultThink() {
 			// prepare for haptic bow pulse
 			m_fHapticPulseTime = g_pGlobals->curtime;
 		
+			// arrow post process
+			m_pNotchedArrow->m_pPickupMeshComponent->SetRenderCustomDepth(true);
+
 		}
 
 		// arrow is no longer notched
 		// and will be fired
 		else {
+			// disable arrow post process
+			m_pNotchedArrow->m_pPickupMeshComponent->SetRenderCustomDepth(false);
 
 			// fire arrow
 			m_pNotchedArrow->FireArrow(m_fArrowVelocity, forward);

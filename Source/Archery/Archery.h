@@ -28,6 +28,8 @@ public:
 		Impossible,
 		SuperImpossible,
 		DMAC,
+		DMAC2,
+		DMACRage,
 
 		NUM_DIFFICULTIES
 	};

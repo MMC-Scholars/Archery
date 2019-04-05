@@ -36,6 +36,9 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Help Text")
 	ATextRenderActor* m_pHelpText;
 
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Help Text 2")
+	ATextRenderActor* m_pHelpText2;
+
 	// string
 	SLineDrawParams m_sStringProps;
 	FVector m_vInitStringLoc;

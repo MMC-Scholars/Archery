@@ -76,6 +76,8 @@ void ALevelMain::SetScoreboard(int score, float time) {
 
 	char *diff;
 	switch (g_archeryGlobals.m_iDifficulty) {
+		case 8: { diff = "DMAC RAGE MODE"; break; }
+		case 7: { diff = "DMac 2.0"; break; }
 		case 6: { diff = "DMac"; break; }
 		case 5: { diff = "Super Impossible"; break; }
 		case 4: { diff = "Impossible"; break; }

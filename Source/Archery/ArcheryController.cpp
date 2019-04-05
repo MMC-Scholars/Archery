@@ -11,7 +11,6 @@ void AArcheryController::PreInit() {
 }
 
 void AArcheryController::OnButtonsChanged() {
-	//Msg("***\n number of arrows %i should be < max, %i\n***", g_archeryGlobals.m_aEArrows.Num(), MAX_NUM_ARROWS);
 
 	// if this is the arrow hand and the trigger is pressed
 	if (g_archeryGlobals.getBowHand() && m_iButtonsPressed & IN_TRIGGER) {
