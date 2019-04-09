@@ -74,8 +74,8 @@ void AArrow::PreInit() {
 void AArrow::ResetArrow(FVector loc) {
 	if (this && m_pPickupMeshComponent) { // bug fix
 		// detach from all actors
-		if (HasValidRootComponent()) DetachFromActor(FDetachmentTransformRules::KeepWorldTransform);
-		else SetRootComponent(m_pPickupMeshComponent);
+	//	if (HasValidRootComponent()) DetachFromActor(FDetachmentTransformRules::KeepWorldTransform);
+	//	else SetRootComponent(m_pPickupMeshComponent);
 		// simulate physics
 		m_pPickupMeshComponent->SetRenderCustomDepth(true);
 		m_pPickupMeshComponent->SetSimulatePhysics(true);

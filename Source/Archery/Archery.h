@@ -93,7 +93,7 @@ extern ArcheryGlobals g_archeryGlobals;
 // the maximum number of arrows in game at once
 #define MAX_NUM_ARROWS 15
 
-// the maximum number of targets activated at once
+// the maximum number of targets active at once
 #define MAX_NUM_TARGETS 10
 
 // the minimum distance between a moving target's start and end point
@@ -102,7 +102,7 @@ extern ArcheryGlobals g_archeryGlobals;
 // the countdown time (seconds) before the game starts
 #define COUNTDOWN_TIME 11
 
-// the amount of time (seconds) to slow down stop the game.
+// the amount of time (seconds) to slow down before stopping the game.
 #define ENDING_SLOW_SOUND_TIME 2
 
 // the initial time (seconds) of one game

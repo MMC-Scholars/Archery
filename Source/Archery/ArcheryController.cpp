@@ -13,7 +13,7 @@ void AArcheryController::PreInit() {
 void AArcheryController::OnButtonsChanged() {
 
 	// if this is the arrow hand and the trigger is pressed
-	if (g_archeryGlobals.getBowHand() && m_iButtonsPressed & IN_TRIGGER) {
+	if (g_archeryGlobals.getArrowHand() == this && m_iButtonsPressed & IN_TRIGGER) {
 		FVector loc = GetActorLocation();
 
 		// if the current number of arrows is less than the max number of arrows
@@ -28,14 +28,16 @@ void AArcheryController::OnButtonsChanged() {
 		else {
 			EHANDLE ent = g_archeryGlobals.m_aEArrows[m_iArrowIndex];
 			if (ent) {
+
 				// reset arrow at index
-				( (AArrow*) ent->GetActor() )->ResetArrow(loc);
-				// shift arrow index
-				m_iArrowIndex = (m_iArrowIndex >= MAX_NUM_ARROWS - 1) ? 0 : m_iArrowIndex + 1;
+				((AArrow*) ent->GetActor())->ResetArrow(loc);
 			}
 			else {
 				g_archeryGlobals.m_aEArrows.RemoveAt(m_iArrowIndex);
 			}
+
+			// shift arrow index
+			m_iArrowIndex = (m_iArrowIndex >= MAX_NUM_ARROWS - 1) ? 0 : m_iArrowIndex + 1;
 		}
 
 	}
