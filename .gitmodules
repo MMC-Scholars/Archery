@@ -1,0 +1,3 @@
+[submodule "Source/Archery/VRBase"]
+	path = Source/Archery/VRBase
+	url = https://github.com/MMC-Scholars/VRBase.git
